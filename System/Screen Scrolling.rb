@@ -29,7 +29,7 @@
 #------------------------------------------------------------------------------
 #  * For Diagonal scroll you use the following script call:
 #------------------------------------------------------------------------------
-#    scroll(direction, distance, speed)
+#    scroll(direction, distance, frames)
 #
 #     -Direction is equal to a number 1, 2, 3, 4, 6, 7, 8, or 9:
 #        7 Up/Left      8 Up        9 Up/Right
@@ -42,11 +42,12 @@
 #      * For diagonal you need to place this in bracets [X, Y] and keep the values
 #      possitive!
 #
-#     -Speed is how fast it should scroll
+#     -Frames is how long it should take to scroll
 #      * Speed was changed to how many frames the scroll should take
 #        ( 1 second = 60 frames )
-#      * default speed 4 is equal to 60 frames, Speed 1: 8xSlower is 
-#        8x slower then speed 4's 60 frames ( 60 * 8, so 480 frames or 8 seconds)
+#      * Default speed 4, from Event Command, is equal to 60 frames, 
+#        Speed 1: 8xSlower is 8x slower then speed 4's 60 frames 
+#        ( 60 * 8, so 480 frames or 8 seconds)
 #
 #  Example call:
 #
@@ -57,7 +58,7 @@
 #------------------------------------------------------------------------------
 #  * To scroll to an event or player, use the following script call:
 #------------------------------------------------------------------------------
-#    scroll_to(object, speed)
+#    scroll_to(object, frames)
 #
 #    - object is the event id you want to scroll to!  
 #      Place 0 if you want to scroll to the player.
