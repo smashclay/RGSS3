@@ -1,5 +1,5 @@
 #==============================================================================
-#** Quasi Equip Series Patch v1.0
+# ** Quasi Equip Series Patch v1.0
 #==============================================================================
 #  Allows Quasi Passive, Quasi Skill Equip, and Quasi Skill Type Equip
 # to work together.  There is no point of using this if you are only
