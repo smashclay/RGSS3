@@ -1,7 +1,7 @@
 #==============================================================================
 # ** Quasi Skill Equip v 1.1
 #  Require Module Quasi
-#   http://code.quasixi.com/page/post/3/
+#   http://code.quasixi.com/page/post/quasi+module/
 #==============================================================================
 # Allows players to equip skills
 # - Player needs to know the skills to be able to equip them!
