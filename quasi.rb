@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.3
+# ** Quasi v0.4
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -7,8 +7,17 @@
 # These methods will be used in other scripts create by Quasi, so instead of
 # making them over and over, they will be placed here.
 #==============================================================================
+# How to install:
+#  - Place this above Main but below Materials.
+#  - All my other scripts should go below this unless stated otherwise.
+#==============================================================================
+#==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v0.4 - Fixed an issue with event comments only grabbing first line
+#      - Modified Quasi::Regex method
+#      - Added few extra methods to string
+# --
 # v0.3 - Added a couple of new methods, and removed some from game_party
 # --
 # v0.2 - Changed followers to be made when there are party members instead of
@@ -22,12 +31,12 @@ module Quasi
   # * Master volume control.  VXA default sounds are too loud on my pc
   #   so I have it set at -70 when testing scripts.
   #--------------------------------------------------------------------------
-  VOLUME = 0
+  VOLUME = -70
   #--------------------------------------------------------------------------
   # * Allows for a quick test by skipping the title screen starting a 
   # new game.  Only works when play testing.
   #--------------------------------------------------------------------------
-  QUICKTEST = false
+  QUICKTEST = true
   #--------------------------------------------------------------------------
   # * Set to true to use quasis follower mod, or false to ignore quasis 
   # follower mod.  With quasis mod, followers are only created when they
@@ -70,114 +79,6 @@ module Quasi
 #      02:Hit Fire <-50..50>
 #    Animation will play at a random size between -50% to 50%
 #
-#------------------------------------------------------------------------------
-# * New method list ( For other scripters and myself)
-#------------------------------------------------------------------------------
-#  module SceneManager
-#    def self.run
-#      * Rewriten for a QUICKTEST, uses orginal method if QUICKTEST is false
-#
-#  class Game_BattlerBase
-#    def param(param_id)
-#      * Added extra values from state param_change
-#
-#    def state_param_plus(param_id)
-#      * Grabs the extra parameter values
-#
-#  class Game_Party
-#    def add_actor & def remove_actor
-#      * Recreates followers
-#
-#    def avg_level & def avg_param(param_id)
-#      * Exactly what it sounds like
-#
-#  class Game_Map
-#    def clone_event(x, y, mapid, eventid)
-#      * Copies event from the mapid to the current map at x,y
-#
-#  class Game_Follower & Game_Followers
-#   def initialize
-#      * Doesn't make all the followers at start anymore.
-#
-#   def recreate
-#      * Used to create followers when they are added to party.
-#
-#  class Game_Event
-#    def grab_comment(regex, default)
-#      * This def grabs comments from the event, if no default is set
-#      it will return true or false if the regex was found.
-#
-#  class Game_Interpeter
-#    def any_switch?(switches, value)
-#      * checks if any switch given in the param is equal to the set value.  
-#
-#    def all_switch?(switches, value)
-#      * checks if all switches are equal to the given value.
-#
-#    **For def any_switch? and def all_switches?
-#      * parameter switches must be a range or an array.
-#        - Range Ex1: (1..5) results numbers 1 through 5
-#          Range Ex2: (1...5) excludes last number, results numbers 1 through 4
-#          Array Ex1:  [1, 2, 3, 4, 5] results in numbers 1 through 5
-#          Array Ex2:  [1, 3, 5, 7, 9] results in numbers 1, 3, 5, 7, 9
-#
-#  class Sprite_Base
-#    alias start_animation
-#    alias animation_set_sprites
-#      * New feature that allows animations to appear different sizes each time.
-#
-#  class Scene_Base
-#    def wait(duration)
-#      * Waits duration time before continuing
-#
-#  class Scene_Map
-#    def spriteset_refresh
-#      * refreshes the spriteset characters
-#
-#  module Kernel
-#    def qrand(max)
-#      * Created my own rand.  A range can be used ex: qrand(-20..20)  
-#        It stores previous 3 randoms and if the current random is equal 
-#        to any of previous 3 it will run again.
-#
-#  module Math
-#    def self.angle(point1, point2)
-#      * Returns the angle of line made by point1 and point2
-#
-#    def self.circle(cx,cy,radius,angle)
-#      * Gets the x,y position on a circle from the given values
-#        cx and cy are center x/y
-#        radius is the radius of the circle
-#        angle is the angle you want the new points at.
-#
-#  class String
-#    def to_range
-#      * Converts string to a range.  Needs to be written as a range
-#        "0..10" or "0...10"
-#
-#    def abc?
-#      * Checks if the string only contains letters
-#
-#    def int?
-#      * Checks if the string only contains numbers
-#
-#  class Array
-#    def to_h
-#      * Converts array to hash
-#
-#  RPG::State
-#    def param_change
-#      * Gets param_change note tag
-#
-#  RPG::Animation
-#    def zoom_range
-#      * Used to grab the random animation zoom range from the name.  If regex
-#        is not found it defaults to 0 which means no change in size.
-#
-#  RPG::SE | RPG::BGM | RPG::ME | RPG::BGS
-#    def play
-#      * Added a master volume control.  Value set on line 94
-#==============================================================================
 #==============================================================================#
 # By Quasi (http://quasixi.wordpress.com/)
 #  - 11/11/14
@@ -198,9 +99,9 @@ module Quasi
         when :int
           result = $1.to_i
         when :array
-          result = $1.split(",")
+          result = $1.to_ary
         when :intarray
-          result = $1.split(",").map {|s| s.to_i}
+          result = regex(string, regex, :array, default)
         when :linearray
           result = []
           for line in $1.split("\r\n")
@@ -213,6 +114,11 @@ module Quasi
             hash = line.split("=>")
             key = hash[0] ? hash[0].strip : nil
             value = hash[1] ? hash[1].strip : nil
+            key = key.int? ? key.to_i : (key.sym? ? key.delete(":").to_sym : key) if key
+            if value
+              value = value.int? ? value.to_i : (value.sym? ? value.delete(":").to_sym : value)
+              value = value.ary? ? value.gsub(/[\[\]]/,"").to_ary : value
+            end
             result[key] = value
           end
         else
@@ -229,7 +135,7 @@ module Quasi
 end
 
 $imported = {} if $imported.nil?
-$imported["Quasi"] = 0.3
+$imported["Quasi"] = 0.4
 
 #==============================================================================
 # ** SceneManager
@@ -443,7 +349,7 @@ class Game_Event < Game_Character
     return unless @list
     reg = []
     @list.each do |cmd|
-      next if cmd.code != 108
+      next if cmd.code != 108 && cmd.code != 408
       comment = cmd.parameters[0]
       next unless comment =~ regex
       if !default.nil?
@@ -455,6 +361,18 @@ class Game_Event < Game_Character
     return default if reg.empty?
     return reg if reg.length > 1
     return reg[0]
+  end
+  #--------------------------------------------------------------------------
+  # * Grabs all comments from event page
+  #--------------------------------------------------------------------------
+  def comments
+    return unless @list
+    comments = ""
+    @list.each do |cmd|
+      next if cmd.code != 108 && cmd.code != 408
+      comments += cmd.parameters[0] + "\r\n"
+    end
+    return comments
   end
 end
 
@@ -605,16 +523,36 @@ class String
     return range[0]...range[1]
   end
   #--------------------------------------------------------------------------
+  # * Converts the string to an array
+  #--------------------------------------------------------------------------
+  def to_ary
+    ary = self.split(",")
+    ary.map!{|s| s.int? ? s.to_i : s}
+    return ary
+  end
+  #--------------------------------------------------------------------------
   # * Checks if string only contains letters
   #--------------------------------------------------------------------------
   def abc?
-    return self =~ /[A-Za-z]/
+    return self !~ /\d/ 
   end
   #--------------------------------------------------------------------------
   # * Checks if string only contains numbers
   #--------------------------------------------------------------------------
   def int?
-    return self =~ /[0-9]/
+    return self !~ /\D/ 
+  end
+  #--------------------------------------------------------------------------
+  # * Checks if string is in Symbol format
+  #--------------------------------------------------------------------------
+  def sym?
+    return self[0] == ":"
+  end
+  #--------------------------------------------------------------------------
+  # * Checks if string is in Symbol format
+  #--------------------------------------------------------------------------
+  def ary?
+    return self[0] == "[" && self[self.size-1] == "]"
   end
 end
 
