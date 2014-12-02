@@ -903,6 +903,7 @@ class Game_Event < Game_Character
   #--------------------------------------------------------------------------
   def setup_page_settings
     qme_setup
+    @boundingbox = nil
     sub_qmove
   end
 end
