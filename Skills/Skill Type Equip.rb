@@ -18,7 +18,7 @@
 #  For compatibility with Quasi Skill Equip and/or Quasi Passive
 # use Quasi Equip Patches:
 #
-#  http://code.quasixi.com/page/post/4/
+#  http://code.quasixi.com/page/post/Quasi+Equip+Series+Patch/
 #
 #  That script should go below all 3 of those scripts.
 #------------------------------------------------------------------------------
