@@ -1,5 +1,5 @@
-#==============================================================================
-# ** Quasi Passive v 2.0
+==============================================================================
+# ** Quasi Passive v 2.1
 #  Require Module Quasi
 #   http://code.quasixi.com/page/post/quasi+module/
 #==============================================================================
@@ -10,6 +10,9 @@
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v 2.1 - 12/5/14
+#       - Small change to learn_passive
+# --
 # v 2.0 - 11/14/14
 #       - Rewritten
 #       - Merged with Passive Equip
@@ -23,7 +26,7 @@
 #  For compatibility with Quasi Skill Equip and/or Quasi Skill Type Equip
 # use Quasi Equip Patches:
 #
-#  http://code.quasixi.com/page/post/Quasi+Equip+Series+Patch/
+#  http://code.quasixi.com/page/post/4/
 #
 #  That script should go below all 3 of those scripts.
 #-----------------------------------------------------------------------------
@@ -80,7 +83,7 @@ end
 #   ** are doing!                                                      **
 #==============================================================================#
 $imported = {} if $imported.nil?
-$imported["Quasi_Passive"] = 2.0
+$imported["Quasi_Passive"] = 2.1
 
 if $imported["Quasi"]
 #==============================================================================
@@ -180,7 +183,7 @@ class Game_Actor < Game_Battler
   #--------------------------------------------------------------------------
   def learn_skill(skill_id)
     qpassive_learn(skill_id)
-    learn_passive(skill_id)
+    learn_passive(skill_id) unless Quasi::Passive::ENABLE_EQUIP
   end
   #--------------------------------------------------------------------------
   # * Forget Skill
@@ -194,10 +197,12 @@ class Game_Actor < Game_Battler
   # * NEW Learn Passive
   #--------------------------------------------------------------------------
   def learn_passive(skill_id)
-    if Quasi::Passive::ENABLE_EQUIP
-      return unless equipped_passive.include?(skill_id)
-    end
     return unless skill_learn?($data_skills[skill_id])
+    if Quasi::Passive::ENABLE_EQUIP
+      return if equipped_passive.include?(skill_id)
+      return if equipped_passive.size >= passive_slots
+      equipped_passive << skill_id
+    end
     passive = $data_skills[skill_id].passive
     add_new_state(passive) if passive
     reset_state_counts(passive) if passive
@@ -347,7 +352,6 @@ class Scene_Skill < Scene_ItemBase
           Sound.play_buzzer
         else
           Sound.play_ok
-          @actor.equipped_passive.push(@passive_window.item.id)
           @actor.learn_passive(@passive_window.item.id) 
         end
       end
