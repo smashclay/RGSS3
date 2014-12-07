@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Movement v1.1
+# ** Quasi Movement v1.1.5
 #  Require Module Quasi [version 0.4 +]
 #   http://code.quasixi.com/page/post/quasi+module/
 #==============================================================================
@@ -14,58 +14,6 @@
 #  - Place this below Module Quasi (link is above)
 #  - Make sure the version of Module Quasi is the required version.
 #  - Follow instructions below Change Log
-#==============================================================================
-# Change Log
-#------------------------------------------------------------------------------
-# v1.1 - 11/27/14
-#      - Added some missing tileboxes
-#      - Tileboxes now created on map load, instead of when stepping on tile
-#      - Tileboxes are now visible with SHOWBOXES settings
-#      - Some SHOWBOXES settings ( blend type and color )
-#      - 2 New options to help reduce lag
-#        SMARTMOVE
-#         - If move didn't succed it will keep trying at lower speeds, until
-#           speed reaches 0.
-#         * Should be used only with pixel movement (GRID = 1)
-#        MIDPASS
-#         - Checks if the midpoint for the move is passable
-#           Small/Thin boxes can be skipped over depending on the
-#           Characters box and grid movement
-#           (You should avoid giving events/charas small boxes at higher grid)
-#         * Should only be used with grid movement like 32
-#      - Seperate default box option for events
-#      - New bounding box comment for events, allows for different box
-#        based on direction.
-#      - Began to fix followers, distance is fixed.
-#      - Fixed Turn/Move Towards/Away from character + added diagonal movement
-#        if its turned on.
-# --
-# v1.0 - 11/18/14
-#      - Removed friction, will write as a seperate add-on.
-#      - Added a few new bounding box methods
-#        > vertices, edge, v_center
-#      - Fixed qmove for forced movement routes (Set Move Route in events)
-#      - Change random to work a smoother for smaller grid movements
-#      - Added TileBoxes which are added in automatically
-#        > Region boxes still priotize over Tiles!
-# --
-# v0.8 - Changed movement speed back to vxa default
-#      - Changed bbox comment box it is now:
-#        <bbox:width,height,ox,oy> (just added the < >)
-#      - Adjusted map passibility, still needs work
-#        Region boxes work much better then tile passibilty.
-#      - Added a mid move passibilty check for more accurate passibilty
-#      - Added Region boxes (more on step 6)
-#      - Added Region Friction (more on step 7) -REMOVED-
-# --
-# v0.7 - Pre-Released for feedback
-#------------------------------------------------------------------------------
-# To do / Upcoming
-#------------------------------------------------------------------------------
-# - Continue to work on Followers
-# - Fix Random movement
-# - Optimize maybe?
-# - Find more bugs
 #==============================================================================
 module Quasi
   module Movement
@@ -113,9 +61,17 @@ module Quasi
 #  Step 4. Set PLAYERBOX and EVENTBOX.  This sets the bounding box for the 
 #          player character or event.  By default it is [24,16,4,8] More 
 #          details on setting bounding boxes a few lines below.
+#
+#          Each actor can have their own bounding box by setting up a
+#          bounding box inside the actors note tag.
 #------------------------------------------------------------------------------
     PLAYERBOX = [24,16,4,16]
     EVENTBOX  = [24,16,4,16]
+    VEHICLES = {
+      :boat     => [32,32,0,0],
+      :ship     => [32,32,0,0],
+      :airship  => [32,32,0,0]   #airship doesn't really matter since it's through
+    }
 #------------------------------------------------------------------------------
 #  Step 5. -Bounding boxes-
 #          How to set up an event:
@@ -189,7 +145,7 @@ module Quasi
 #------------------------------------------------------------------------------
     SHOWBOXES   = true
     BOXBLEND    = 1
-    BOXCOLOR    = Color.new(255, 0, 0)
+    BOXCOLOR    = Color.new(255, 0, 0, 150)
 #------------------------------------------------------------------------------
 # **DO NOT EDIT THESE UNLESS YOU KNOW WHAT YOU ARE DOING
 #------------------------------------------------------------------------------
@@ -204,6 +160,7 @@ module Quasi
       1548 => [[32, 4], [4, 32, 28]],
       1551 => [32, 32],
       2063 => [32, 32],
+      2575 => [32, 32],
       3586 => [4, 32],
       3588 => [4, 32, 28],
       3590 => [[4, 32], [4, 32, 28]],
@@ -215,6 +172,64 @@ module Quasi
     }
   end
 end
+#==============================================================================
+# Change Log
+#------------------------------------------------------------------------------
+# v1.15 - 12/6/14
+#      - Added some vehicle support
+#      - Fixed followers to straighten when following
+#      - Fixed Random move
+#      - Above/Below priority are fixed
+# --
+# v1.1 - 11/27/14
+#      - Added some missing tileboxes
+#      - Tileboxes now created on map load, instead of when stepping on tile
+#      - Tileboxes are now visible with SHOWBOXES settings
+#      - Some SHOWBOXES settings ( blend type and color )
+#      - 2 New options to help reduce lag
+#        SMARTMOVE
+#         - If move didn't succed it will keep trying at lower speeds, until
+#           speed reaches 0.
+#         * Should be used only with pixel movement (GRID = 1)
+#        MIDPASS
+#         - Checks if the midpoint for the move is passable
+#           Small/Thin boxes can be skipped over depending on the
+#           Characters box and grid movement
+#           (You should avoid giving events/charas small boxes at higher grid)
+#         * Should only be used with grid movement like 32
+#      - Seperate default box option for events
+#      - New bounding box comment for events, allows for different box
+#        based on direction.
+#      - Began to fix followers, distance is fixed.
+#      - Fixed Turn/Move Towards/Away from character + added diagonal movement
+#        if its turned on.
+# --
+# v1.0 - 11/18/14
+#      - Removed friction, will write as a seperate add-on.
+#      - Added a few new bounding box methods
+#        > vertices, edge, v_center
+#      - Fixed qmove for forced movement routes (Set Move Route in events)
+#      - Change random to work a smoother for smaller grid movements
+#      - Added TileBoxes which are added in automatically
+#        > Region boxes still priotize over Tiles!
+# --
+# v0.8 - Changed movement speed back to vxa default
+#      - Changed bbox comment box it is now:
+#        <bbox:width,height,ox,oy> (just added the < >)
+#      - Adjusted map passibility, still needs work
+#        Region boxes work much better then tile passibilty.
+#      - Added a mid move passibilty check for more accurate passibilty
+#      - Added Region boxes (more on step 6)
+#      - Added Region Friction (more on step 7) -REMOVED-
+# --
+# v0.7 - Pre-Released for feedback
+#------------------------------------------------------------------------------
+# To do / Upcoming
+#------------------------------------------------------------------------------
+# - Continue to work on Followers / Vehicles
+# - Region locked events (Add-on)
+# - Find more bugs
+#==============================================================================
 #==============================================================================#
 # By Quasi (http://quasixi.com/) || (https://github.com/quasixi/RGSS3)
 #  - 9/22/14
@@ -223,7 +238,7 @@ end
 #   ** are doing!                                                      **
 #==============================================================================#
 $imported = {} if $imported.nil?
-$imported["Quasi_Movement"] = 1.1
+$imported["Quasi_Movement"] = 1.15
 
 if $imported["Quasi"]
 #==============================================================================
@@ -243,6 +258,7 @@ class Game_CharacterBase
   attr_reader   :px            
   attr_reader   :py 
   attr_reader   :velocity
+  attr_reader   :diag
   #--------------------------------------------------------------------------
   # * Initialize Public Member Variables
   #--------------------------------------------------------------------------
@@ -310,8 +326,8 @@ class Game_CharacterBase
   #--------------------------------------------------------------------------
   def collide_with_box?(x, y)
     boxes = $game_map.bounding_xy(box_xy(x,y))
-    if !boxes.empty?
-      boxes.keep_if {|e| e != self}
+    unless boxes.empty?
+      boxes.keep_if {|e| e != self && e.normal_priority?}
     end
     !boxes.empty? || collide_with_vehicles?(x,y)
   end
@@ -319,8 +335,8 @@ class Game_CharacterBase
   # * Detect Collision with Vehicle
   #--------------------------------------------------------------------------
   def collide_with_vehicles?(x, y)
-    $game_map.boat.pos_nt?((x/32).round, (y/32).round) || 
-    $game_map.ship.pos_nt?((x/32).round, (y/32).round)
+    $game_map.boat.box?(box_xy(x,y)) ||
+    $game_map.ship.box?(box_xy(x,y))
   end
   #--------------------------------------------------------------------------
   # * Determine Triggering of Frontal Touch Event
@@ -413,7 +429,7 @@ class Game_CharacterBase
       check_event_trigger_touch_front
     end
     @move_speed = orginal_speed
-    @velocity = 0 if !@move_succeed
+    @velocity = 0 unless @move_succeed
   end
   #--------------------------------------------------------------------------
   # * Move Diagonally
@@ -451,6 +467,28 @@ class Game_CharacterBase
     end
   end
   #--------------------------------------------------------------------------
+  # * Fixed Move
+  #   - Moves a fixed amount of distance
+  #--------------------------------------------------------------------------
+  def fixed_move(dist)
+    d = @direction
+    @move_succeed = passable?(@px, @py, d)
+    if @move_succeed
+      set_direction(d)
+      @diag = false
+      @velocity = dist
+      @npx = $game_map.round_px_with_direction(@px, d, dist)
+      @npy = $game_map.round_py_with_direction(@py, d, dist)
+      @px = $game_map.px_with_direction(@npx, reverse_dir(d), dist)
+      @py = $game_map.py_with_direction(@npy, reverse_dir(d), dist)
+      increase_steps
+    elsif turn_ok
+      set_direction(d)
+      check_event_trigger_touch_front
+    end
+    @velocity = 0 unless @move_succeed
+  end
+  #--------------------------------------------------------------------------
   # * Bounding box array
   #--------------------------------------------------------------------------
   def bounding_box
@@ -478,7 +516,8 @@ class Game_CharacterBase
   #--------------------------------------------------------------------------
   def box?(objbox, through=nil)
     through = through.nil? ? @through : through
-    return if !bounding_box || through
+    return unless bounding_box
+    return if through
     pass1 = (objbox[0].first <= box_xy[0].last) && (objbox[0].last >= box_xy[0].first)
     pass2 = (objbox[1].first <= box_xy[1].last) && (objbox[1].last >= box_xy[1].first)
     return pass1 && pass2
@@ -554,7 +593,7 @@ end
 #==============================================================================
 
 class Game_Map
-  alias qmove_gm_setup setup
+  alias qmove_gm_setup        setup
   #--------------------------------------------------------------------------
   # * Setup
   #--------------------------------------------------------------------------
@@ -622,6 +661,7 @@ class Game_Map
           else
             next if flag & 0x10 != 0
             next unless Quasi::Movement::TILEBOXES[flag] 
+            next if @tileboxes[x][y]
             @tileboxes[x][y] = tilebox(x, y, flag, true)
           end
         end
@@ -649,7 +689,7 @@ class Game_Map
         oy = box[3].nil? ? 0 : box[3]
         bx = x1 + ox..x1 + box[0] + ox
         by = y1 + oy..y1 + box[1] + oy
-        tilebox << [bx, by]
+        tilebox << [bx, by, id]
       end
     else
       x1 = x * 32; y1 = y * 32
@@ -657,7 +697,7 @@ class Game_Map
       oy = bb[3].nil? ? 0 : bb[3]
       bx = x1 + ox..x1 + bb[0] + ox
       by = y1 + oy..y1 + bb[1] + oy
-      tilebox = [bx, by]
+      tilebox = [bx, by, id]
     end
     return tilebox
   end
@@ -672,7 +712,7 @@ end
 #==============================================================================
 
 class Game_Character < Game_CharacterBase
-  alias qmgc_force force_move_route
+  alias qmgc_force  force_move_route
   #--------------------------------------------------------------------------
   # * Force Move Route
   #--------------------------------------------------------------------------
@@ -703,50 +743,6 @@ class Game_Character < Game_CharacterBase
   # * Filler method
   #--------------------------------------------------------------------------
   def qmove(dir, steps)
-  end
-  alias qmgc_process process_move_command
-  #--------------------------------------------------------------------------
-  # * Process Move Command
-  #--------------------------------------------------------------------------
-  def process_move_command(command)
-    qmgc_process(command)
-    params = command.parameters
-    case command.code
-    when :reset;  qreset(params[0])
-    end
-  end
-  #--------------------------------------------------------------------------
-  # * Move at Random
-  #--------------------------------------------------------------------------
-  def move_random
-    dir = qrand(1..4)
-    dir = qrand(1..9) if Quasi::Movement::DIR8
-    while dir == 5
-      dir = qrand(1..9) if Quasi::Movement::DIR8
-    end
-    move = { 2 => ROUTE_MOVE_DOWN,     4 => ROUTE_MOVE_LEFT,
-             6 => ROUTE_MOVE_RIGHT,    8 => ROUTE_MOVE_UP,
-             1 => ROUTE_MOVE_LOWER_L,  3 => ROUTE_MOVE_LOWER_R,
-             7 => ROUTE_MOVE_UPPER_L,  9 => ROUTE_MOVE_UPPER_R  }
-    amt = [(qrand(6..32)) - Quasi::Movement::GRID, 1].max
-    amt = (amt/real_move_speed).round
-    amt.times do
-      @move_route.list.insert(@move_route_index+1, RPG::MoveCommand.new(move[dir]))
-    end
-    last = @move_route_index + amt + 1
-    @move_route.list.insert(last, RPG::MoveCommand.new(:reset, [@move_route_index+1]))
-  end
-  #--------------------------------------------------------------------------
-  # * QReset
-  #--------------------------------------------------------------------------
-  def qreset(backto)
-    @move_route.list.each {|list| p list}
-    backtrack = @move_route_index - backto + 1
-    backtrack.times do
-      @move_route.list.delete_at(backto)
-    end
-    @move_route_index = backto - 1
-    @move_route.list.each {|list| p list}
   end
   #--------------------------------------------------------------------------
   # * Move Toward Character
@@ -818,22 +814,27 @@ class Game_Character < Game_CharacterBase
     end
     x1 = @px - obj.px
     y1 = @py - obj.py
-    x2 = x1.abs > bb[0] ? p_adjust_wbox(x1, :x) : 0
-    y2 = y1.abs > bb[1] ? p_adjust_wbox(y1, :y) : 0
-    x3 = x2.abs < Quasi::Movement::GRID ? x2 : x1
-    y3 = y2.abs < Quasi::Movement::GRID ? y2 : y1
-    return [x3, y3]
+    x2 = y2 = 0
+    if obj.diag
+      x2 = x1.abs > bb[0] ? p_adjust_wbox(x1, :x, bb) : 0
+      y2 = y1.abs > bb[1] ? p_adjust_wbox(y1, :y, bb) : 0
+    elsif obj.direction == 4 || obj.direction == 6
+      x2 = x1.abs > bb[0] ? p_adjust_wbox(x1, :x, bb) : 0
+      y2 = v_center[1] - obj.v_center[1]
+    elsif obj.direction == 8 || obj.direction == 2
+      y2 = y1.abs > bb[1] ? p_adjust_wbox(y1, :y, bb) : 0
+      x2 = v_center[0] - obj.v_center[0]
+    end
+    if self.is_a?(Game_Follower)
+      return [x1, y1] if $game_player.followers_gathering?
+    end
+    return [x2, y2]
   end
   #--------------------------------------------------------------------------
   # * Adjust distance with box
   # (Finds out if it should add/sub the width or height of the box to value)
   #--------------------------------------------------------------------------
-  def p_adjust_wbox(value, axis)
-    return 0 if value == 0
-    bb = bounding_box
-    if bb.is_a?(Hash)
-      bb = bb["dir#{direction}".to_sym] ? bb["dir#{direction}".to_sym] : bb[:main]
-    end
+  def p_adjust_wbox(value, axis, bb)
     if axis == :x
       if value < 0
         value += bb[0]
@@ -906,6 +907,18 @@ class Game_Event < Game_Character
     @boundingbox = nil
     sub_qmove
   end
+  #--------------------------------------------------------------------------
+  # * Move Type : Random
+  #--------------------------------------------------------------------------
+  def move_type_random
+    amt = rand(6)
+    steps = (rand(32))/@grid * amt
+    case qrand(steps+1)
+    when 0..1;      move_random
+    when 2..steps;  move_forward
+    when steps+1;   @stop_count = 0
+    end
+  end
 end
 
 #==============================================================================
@@ -917,6 +930,44 @@ end
 #==============================================================================
 
 class Game_Player < Game_Character
+  #--------------------------------------------------------------------------
+  # * Tile box Collision
+  #  Returns true if tile is passable ( No box collision. )
+  #--------------------------------------------------------------------------
+  def tilepass?(x, y, nx, ny)
+    tb = $game_map.tileboxes[x][y]
+    if @vehicle_type == :boat || @vehicle_type == :ship
+      return false unless tb
+    end
+    return true if !tb || @through
+    if tb[0].is_a?(Array)
+      pass = []
+      tb.each do |b|
+        pass << tilebox?(b, nx, ny)
+      end
+      if @vehicle_type == :boat 
+        return tb[0][2] == 2063
+      elsif @vehicle_type == :ship
+        return tb[0][2] == 2063 || tb[0][2] == 2575
+      end
+      return pass.count(false) == pass.size 
+    else
+      if @vehicle_type == :boat 
+        return tb[2] == 2063
+      elsif @vehicle_type == :ship
+        return tb[2] == 2063 || tb[2] == 2575
+      end
+      return tilebox?(tb, nx, ny) == false
+    end
+  end
+  #--------------------------------------------------------------------------
+  # * Detect Collision with Vehicle
+  #--------------------------------------------------------------------------
+  def collide_with_vehicles?(x, y)
+    return false unless @vehicle_type == :walk
+    $game_map.boat.box?(box_xy(x,y)) ||
+    $game_map.ship.box?(box_xy(x,y))
+  end
   #--------------------------------------------------------------------------
   # * Processing of Movement via Input from Directional Buttons
   #--------------------------------------------------------------------------
@@ -973,6 +1024,67 @@ class Game_Player < Game_Character
     start_map_event(x3, y3, triggers, true)
   end
   #--------------------------------------------------------------------------
+  # * Board Vehicle
+  #    Assumes that the player is not currently in a vehicle.
+  #--------------------------------------------------------------------------
+  def get_on_vehicle
+    front_x = $game_map.round_px_with_direction(@px, @direction, move_tiles)
+    front_y = $game_map.round_py_with_direction(@py, @direction, move_tiles)
+    @vehicle_type = :boat    if $game_map.boat.box?(box_xy(front_x, front_y))
+    @vehicle_type = :ship    if $game_map.ship.box?(box_xy(front_x, front_y))
+    @vehicle_type = :airship if $game_map.airship.box?(box_xy)
+    if vehicle
+      @vehicle_getting_on = true
+      distx = vehicle.px - @px
+      disty = vehicle.py - @py
+      dist = disty
+      dist = distx if @direction == 4 || @direction == 6
+      force_move_towards(dist) unless in_airship?
+      @followers.gather
+    end
+    @vehicle_getting_on
+  end
+  #--------------------------------------------------------------------------
+  # * Get Off Vehicle
+  #    Assumes that the player is currently riding in a vehicle.
+  #--------------------------------------------------------------------------
+  def get_off_vehicle
+    if vehicle.land_ok?(@px, @py, @direction)
+      set_direction(2) if in_airship?
+      @followers.synchronize(@x, @y, @direction)
+      vehicle.get_off
+      unless in_airship?
+        distx = (((vehicle.px/32).truncate + 1) * 32 - vehicle.px).abs
+        disty = (((vehicle.py/32).truncate + 1) * 32 - vehicle.py).abs
+        dist = disty
+        dist = distx if @direction == 4 || @direction == 6
+        force_move_towards(dist)
+        @transparent = false
+      end
+      @vehicle_getting_off = true
+      @move_speed = 4
+      @through = false
+      make_encounter_count
+      @followers.gather
+    end
+    @vehicle_getting_off
+  end
+  #--------------------------------------------------------------------------
+  # * Force One Step Forward
+  #--------------------------------------------------------------------------
+  def force_move_towards(dist)
+    @through = true
+    dist = (dist/@grid).abs
+    fixed_move(dist)
+    @through = false
+  end
+  #--------------------------------------------------------------------------
+  # * Check if followers are gathering
+  #--------------------------------------------------------------------------
+  def followers_gathering?
+    return @followers.gathering?
+  end
+  #--------------------------------------------------------------------------
   # * Move Straight
   #--------------------------------------------------------------------------
   def move_straight(d, turn_ok = true)
@@ -991,7 +1103,7 @@ class Game_Player < Game_Character
   #--------------------------------------------------------------------------
   def bounding_box
     return @boundingbox if @boundingbox
-    @boundingbox = Quasi::Movement::PLAYERBOX
+    @boundingbox = actor.actor.bounding_box
   end
 end
 
@@ -1012,23 +1124,119 @@ class Game_Follower < Game_Character
       dist = p_distance_from(@preceding_character)
       sx = dist[0]
       sy = dist[1]
-      if sx != 0 && sy != 0
+      if sx.abs > 2 && sy.abs > 2
         move_diagonal(sx > 0 ? 4 : 6, sy > 0 ? 8 : 2)
-      elsif sx != 0
+      elsif sx.abs > 2
         move_straight(sx > 0 ? 4 : 6)
-      elsif sy != 0
+      elsif sy.abs > 2
         move_straight(sy > 0 ? 8 : 2)
       end
     end
+  end
+  #--------------------------------------------------------------------------
+  # * Determine if at Same Position as Preceding Character
+  #--------------------------------------------------------------------------
+  def gather?
+    !moving? && box?(@preceding_character.box_xy, false)
   end
   #--------------------------------------------------------------------------
   # * Bounding box
   #--------------------------------------------------------------------------
   def bounding_box
     return @boundingbox if @boundingbox
-    @boundingbox = Quasi::Movement::PLAYERBOX
+    if actor
+      @boundingbox = actor.actor.bounding_box
+    else
+      @boundingbox = Quasi::Movement::PLAYERBOX
+    end
   end
 end
+
+#==============================================================================
+# ** Game_Vehicle
+#------------------------------------------------------------------------------
+#  This class handles vehicles. It's used within the Game_Map class. If there
+# are no vehicles on the current map, the coordinates are set to (-1,-1).
+#==============================================================================
+
+class Game_Vehicle < Game_Character
+  alias qmove_gv_sync  sync_with_player
+  #--------------------------------------------------------------------------
+  # * Synchronize With Player 
+  #--------------------------------------------------------------------------
+  def sync_with_player
+    @px = $game_player.px
+    @py = $game_player.py
+    qmove_gv_sync
+  end
+  #--------------------------------------------------------------------------
+  # * Determine if Docking/Landing Is Possible
+  #     d:  Direction (2,4,6,8)
+  #--------------------------------------------------------------------------
+  def land_ok?(x, y, d)
+    if @type == :airship
+      return false unless $game_map.airship_land_ok?((x/32).truncate, (y/32).truncate,)
+      return false unless $game_map.bounding_xy(box_xy(x,y)).empty?
+    else
+      distx = (((x/32).truncate * 32) - x).abs
+      disty = (((y/32).truncate * 32) - y).abs
+      x1 = d == 4 ? x-distx : d == 6 ? x + distx : x
+      y1 = d == 8 ? y-disty : d == 2 ? y + disty : y
+      x2 = $game_map.round_px(x1)
+      y2 = $game_map.round_py(y1)
+      x3 = $game_map.round_x((x1/32.0).round)
+      y3 = $game_map.round_y((y1/32.0).round)
+      return false unless $game_map.valid?(x3, y3)
+      return false unless collide_with_tilebox?(x2, y2, d)
+      return false if collide_with_box?(x2, y2)
+    end
+    return true
+  end
+  #--------------------------------------------------------------------------
+  # * Detect Collision with Character 
+  #--------------------------------------------------------------------------
+  def collide_with_box?(x, y)
+    boxes = $game_map.bounding_xy(box_xy(x,y))
+    unless boxes.empty?
+      boxes.keep_if {|e| e != self && e.normal_priority?}
+    end
+    !boxes.empty?
+  end
+  #--------------------------------------------------------------------------
+  # * Bounding box
+  #--------------------------------------------------------------------------
+  def bounding_box
+    return @boundingbox if @boundingbox
+    boxes = Quasi::Movement::VEHICLES
+    @boundingbox = boxes[@type]
+  end
+end
+
+#==============================================================================
+# ** RPG::BaseItem
+#==============================================================================
+
+class RPG::Actor
+  def bounding_box
+    if @bounding_box.nil?
+      default = Quasi::Movement::PLAYERBOX
+      bb = Quasi::regex(@note, /<bbox>(.*)<\/bbox>/im, :linehash)
+      if bb
+        bb[:main] = default unless bb[:main]
+      else
+        bb = Quasi::regex(@note, /<bbox=(.*)>/i, :array, default)
+      end
+      @bounding_box = bb
+    end
+    return @bounding_box
+  end
+end
+
+#==============================================================================
+# FOLLOWING IS FOR SHOWING BOUNDING BOXES
+# * These are onle required to show bounding boxes
+#   There aren't required for the actual script and can be removed
+#==============================================================================
 
 #==============================================================================
 # ** Sprite_Character
@@ -1038,9 +1246,8 @@ end
 #==============================================================================
 
 class Sprite_Character < Sprite_Base
-  alias qbox_init initialize
-  alias qbox_update update
-  alias qbox_dispose dispose
+  alias qbox_init     initialize
+  alias qbox_update   update
   #--------------------------------------------------------------------------
   # * Object Initialization
   #     character : Game_Character
@@ -1084,20 +1291,6 @@ class Sprite_Character < Sprite_Base
     @box_sprite.blend_type = Quasi::Movement::BOXBLEND
   end
   #--------------------------------------------------------------------------
-  # * Free
-  #--------------------------------------------------------------------------
-  def dispose
-    qbox_dispose
-    dispose_box if Quasi::Movement::SHOWBOXES 
-  end
-  #--------------------------------------------------------------------------
-  # * Free Box
-  #--------------------------------------------------------------------------
-  def dispose_box
-    @box_sprite.bitmap.dispose if @box_sprite.bitmap
-    @box_sprite.dispose
-  end
-  #--------------------------------------------------------------------------
   # * Update Box
   #--------------------------------------------------------------------------
   def update_box
@@ -1105,12 +1298,10 @@ class Sprite_Character < Sprite_Base
     @box_sprite.x = x if @box_sprite.x != x 
     @box_sprite.y = y if @box_sprite.y != y
     if @bbox != @character.bounding_box
-      dispose_box
       start_box
     end
     if @character.bounding_box.is_a?(Hash)
       if @bdir != @character.direction
-        dispose_box
         start_box
       end
     end
