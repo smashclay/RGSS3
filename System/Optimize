@@ -130,13 +130,12 @@ end
 #==============================================================================
 
 class Game_Character < Game_CharacterBase
-  alias qmgc_force  force_move_route
-  alias qmgc_init  init_public_members
+  alias qopt_gc_init   init_public_members
   #--------------------------------------------------------------------------
   # * Initialize Public Member Variables
   #--------------------------------------------------------------------------
   def init_public_members
-    qmgc_init
+    qopt_gc_init
     @last_pos = [0, 0]
     @last_gridpos = [0, 0]
     @last_dir = 0
@@ -221,8 +220,8 @@ end
 #==============================================================================
 
 class Spriteset_Map
-  alias qmove_sm_upc   update_characters
-  alias qmove_sm_disc  dispose_characters
+  alias qopt_sm_upc   update_characters
+  alias qopt_sm_disc  dispose_characters
   #--------------------------------------------------------------------------
   # * Create Character Sprite
   # * OVERWRITE
@@ -247,14 +246,14 @@ class Spriteset_Map
   # * Update Character Sprite
   #--------------------------------------------------------------------------
   def update_characters
-    qmove_sm_upc
+    qopt_sm_upc
     @event_sprites.each_value{|sprite| sprite.update }
   end
   #--------------------------------------------------------------------------
   # * Free Character Sprite
   #--------------------------------------------------------------------------
   def dispose_characters
-    qmove_sm_disc
+    qopt_sm_disc
     @event_sprites.each_value{|sprite| sprite.dispose }
   end
   #--------------------------------------------------------------------------
