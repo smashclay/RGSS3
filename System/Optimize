@@ -131,12 +131,12 @@ end
 
 class Game_Character < Game_CharacterBase
   alias qmgc_force  force_move_route
-  alias qs_init     init_public_members
+  alias qmgc_init  init_public_members
   #--------------------------------------------------------------------------
   # * Initialize Public Member Variables
   #--------------------------------------------------------------------------
   def init_public_members
-    qs_init
+    qmgc_init
     @last_pos = [0, 0]
     @last_gridpos = [0, 0]
     @last_dir = 0
