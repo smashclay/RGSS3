@@ -57,10 +57,10 @@ class Game_Map
     @onscreenevents = []
   end
   #--------------------------------------------------------------------------
-  # * Get Array of Event Bounding Box at Designated Coordinates
+  # * Get events on map
   #--------------------------------------------------------------------------
-  def bounding_xy(objbox,through=nil)
-    screen_events.select {|event| event.box?(objbox, through) }
+  def map_events
+    screen_events
   end
   #--------------------------------------------------------------------------
   # * Set Display Position
