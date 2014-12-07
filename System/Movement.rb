@@ -13,7 +13,7 @@
 # How to install:
 #  - Place this below Module Quasi (link is above)
 #  - Make sure the version of Module Quasi is the required version.
-#  - Follow instructions below Change Log
+#  - Follow instructions below
 #==============================================================================
 module Quasi
   module Movement
