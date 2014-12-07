@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Optimize v 0.5
+# ** Quasi Optimize v 0.6
 #  Requires Quasi Movement [version 1.1.5+]
 #   http://code.quasixi.com/page/post/movement/
 #==============================================================================
@@ -8,10 +8,10 @@
 # are offscreen their sprites are disposed.  By doing this the collision
 # checks only check for events on screen, instead of all the events on the map.
 #
-#  Want to use someone elses anti-lag script?  No problem! copy the def from
-# line 62-64 { def bounding_xy(objbox, through=nil) }
-# and change screen_events on line 63 to the variable or method for their
-# on screen event list.  VXA default is @events.values
+#  Want to use someone elses anti-lag script?  No problem!
+#  On line 62 you will see def map_events
+#  change the return value in that def to to event list / list method that
+#  the anti lag uses.  Default VXA uses @events.values
 #==============================================================================
 # How to install:
 #  - Place this below Quasi Movement (link is above)
@@ -35,7 +35,7 @@ end
 #   ** are doing!                                                      **
 #==============================================================================#
 $imported = {} if $imported.nil?
-$imported["Quasi_Optimize"] = 0.5
+$imported["Quasi_Optimize"] = 0.6
 
 if $imported["Quasi_Movement"]
 #==============================================================================
@@ -60,7 +60,7 @@ class Game_Map
   # * Get events on map
   #--------------------------------------------------------------------------
   def map_events
-    screen_events
+    return screen_events
   end
   #--------------------------------------------------------------------------
   # * Set Display Position
