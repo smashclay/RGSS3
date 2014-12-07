@@ -270,3 +270,6 @@ class Spriteset_Map
     @event_sprites[event.id] = Sprite_Character.new(@viewport1, event)
   end
 end
+else
+  msgbox(sprintf("[Quasi Optimize] Requires Quasi movement."))
+end
