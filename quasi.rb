@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4
+# ** Quasi v0.4.1
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -10,21 +10,6 @@
 # How to install:
 #  - Place this above Main but below Materials.
 #  - All my other scripts should go below this unless stated otherwise.
-#==============================================================================
-#==============================================================================
-# Change Log
-#------------------------------------------------------------------------------
-# v0.4 - Fixed an issue with event comments only grabbing first line
-#      - Modified Quasi::Regex method
-#      - Added few extra methods to string
-# --
-# v0.3 - Added a couple of new methods, and removed some from game_party
-# --
-# v0.2 - Changed followers to be made when there are party members instead of
-#        already being made.
-#      - Fix to angle, had a typo.
-# --
-# v0.1 - Pre-Released for movement script
 #==============================================================================
 module Quasi
   #--------------------------------------------------------------------------
@@ -57,7 +42,13 @@ module Quasi
 #     <param change>
 #     param => value
 #     </param change>
-#   Whereparam can be: MHP, MMP, ATK, DEF, MAT, MDF, AGI, LUK
+#   Where param can be: MHP, MMP, ATK, DEF, MAT, MDF, AGI, LUK, HRT, MRT, TRT
+#
+#   HRT, MRT, TRT are new params that work like HRG, MRG, TGR but instead of
+#   increasing/decreasing by a percentage, it ticks a fixed value.
+#
+#   Value can be a formula that accepts a and v[id], similiar to skill formulas
+#   But does not take b!
 #
 #  Example:
 #     <param change>
@@ -65,6 +56,13 @@ module Quasi
 #     ATK => 20
 #     </param change>
 #   Would result in that state adding 100 to max hp and 20 to attack.
+#
+#     <param change>
+#     MHP => -100
+#     MRT => 5 + v[1]
+#     </param change>
+#   Would result in that state removes 100 hp but you will have an mp regen of
+#   5 + value of variable 1
 #  * value can be negative
 #  * param is not case sensative
 #
@@ -79,6 +77,25 @@ module Quasi
 #      02:Hit Fire <-50..50>
 #    Animation will play at a random size between -50% to 50%
 #
+#==============================================================================
+# Change Log
+#------------------------------------------------------------------------------
+# v0.4.1 - 12/6/14
+#        - Added 3 new params, hrt, mrt, trt (similar to hgr, mgr, tgr)
+#          - These new params allow for a fixed increase of regen instead of a %
+#        - Added eval to <param change>, which allows for formulas inside it
+# --
+# v0.4 - Fixed an issue with event comments only grabbing first line
+#      - Modified Quasi::Regex method
+#      - Added few extra methods to string
+# --
+# v0.3 - Added a couple of new methods, and removed some from game_party
+# --
+# v0.2 - Changed followers to be made when there are party members instead of
+#        already being made.
+#      - Fix to angle, had a typo.
+# --
+# v0.1 - Pre-Released for movement script
 #==============================================================================#
 # By Quasi (http://quasixi.wordpress.com/)
 #  - 11/11/14
@@ -116,8 +133,13 @@ module Quasi
             value = hash[1] ? hash[1].strip : nil
             key = key.int? ? key.to_i : (key.sym? ? key.delete(":").to_sym : key) if key
             if value
-              value = value.int? ? value.to_i : (value.sym? ? value.delete(":").to_sym : value)
-              value = value.ary? ? value.gsub(/[\[\]]/,"").to_ary : value
+              if value.int? 
+                value = value.to_i 
+              elsif value.sym? 
+                value = value.delete(":").to_sym 
+              elsif value.ary?
+                value = value.gsub(/[\[\]]/,"").to_ary
+              end
             end
             result[key] = value
           end
@@ -177,6 +199,10 @@ end
 #==============================================================================
 
 class Game_BattlerBase
+  def hrt;  qparam(0);  end               # HRT  Hp ReGeneration tick
+  def mrt;  qparam(1);  end               # MRT  Mp ReGeneration tick
+  def trt;  qparam(2);  end               # TRT  Tp ReGeneration tick
+    
   alias qgbb_param param
   #--------------------------------------------------------------------------
   # * Get Parameter
@@ -191,10 +217,54 @@ class Game_BattlerBase
     value = 0
     states.each do |state|
       next unless state.param_change
-      param_change = state.param_change[param_id]
-      value += param_change.to_i if param_change
+      a = self
+      v = $game_variables
+      param_change = eval(state.param_change[param_id].to_s) rescue 0
+      value += param_change if param_change
     end
     return value
+  end
+  
+  def qparam(qparam_id)
+    return state_param_plus(qparam_id + 8)
+  end
+end
+
+#==============================================================================
+# ** Game_Battler
+#------------------------------------------------------------------------------
+#  A battler class with methods for sprites and actions added. This class 
+# is used as a super class of the Game_Actor class and Game_Enemy class.
+#==============================================================================
+
+class Game_Battler < Game_BattlerBase
+  alias qgb_reghp  regenerate_hp
+  alias qgb_regmp  regenerate_mp
+  alias qgb_regtp  regenerate_tp
+  #--------------------------------------------------------------------------
+  # * Regenerate HP
+  #--------------------------------------------------------------------------
+  def regenerate_hp
+    qgb_reghp
+    damage = -(hrt).to_i
+    perform_map_damage_effect if $game_party.in_battle && damage > 0
+    @result.hp_damage = [damage, max_slip_damage].min
+    self.hp -= @result.hp_damage
+  end
+  #--------------------------------------------------------------------------
+  # * Regenerate MP
+  #--------------------------------------------------------------------------
+  def regenerate_mp
+    qgb_regmp
+    @result.mp_damage = -(mrt).to_i
+    self.mp -= @result.mp_damage
+  end
+  #--------------------------------------------------------------------------
+  # * Regenerate TP
+  #--------------------------------------------------------------------------
+  def regenerate_tp
+    qgb_regtp
+    self.tp += trt
   end
 end
 
@@ -491,11 +561,13 @@ module Math
   #--------------------------------------------------------------------------
   # * Calculate angle between 2 points
   #--------------------------------------------------------------------------
-  def self.angle(point1,point2)
+  def self.angle(point1, point2, quad4 = false)
     x = point2[0] - point1[0]
     y = point2[1] - point1[1]
+    y *= -1 if quad4
     radian = atan2(y, x)
-    angle = (radian / PI) * 180
+    angle = (radian * 180 / PI)
+    angle = 360 + angle if angle < 0 
     return angle
   end
   #--------------------------------------------------------------------------
@@ -574,7 +646,8 @@ class RPG::State
       regex = /<(?:param_change|param change)>(.*)<\/(?:param_change|param change)>/im
       temp = Quasi::regex(@note, regex, :linehash, false)
       id = {"mhp" => 0, "mmp" => 1, "atk" => 2, "def" => 3, "mat" => 4,
-             "mdf" => 5, "agi" => 6, "luk" => 7}
+            "mdf" => 5, "agi" => 6, "luk" => 7, 
+            "hrt" => 8, "mrt" => 9, "trt" => 10}
       if temp
         @param_change = temp.map {|key, v| [id[key.downcase] || key, v]}.to_h
       else
