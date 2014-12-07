@@ -1,9 +1,7 @@
 #==============================================================================
-# ** Quasi Movement v1.1.5
+# ** Quasi Movement v1.1.6
 #  Require Module Quasi [version 0.4 +]
 #   http://code.quasixi.com/page/post/quasi+module/
-#  For a slight performance boost use
-#   https://github.com/quasixi/RGSS3/blob/master/System/Optimize
 #==============================================================================
 #  Changed how movement works.  Allows players to choose how many pixels to move
 # per movement.  In better terms, allows players to make characters have a pixel
@@ -177,6 +175,10 @@ end
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v1.16 - 12/6/14
+#       - changed @events.values to a method called map_events
+#         this should allow easy compatibility patch with other anti lag
+# --
 # v1.15 - 12/6/14
 #      - Added some vehicle support
 #      - Fixed followers to straighten when following
@@ -648,7 +650,13 @@ class Game_Map
   # * Get Array of Event Bounding Box at Designated Coordinates
   #--------------------------------------------------------------------------
   def bounding_xy(objbox,through=nil)
-    @events.values.select {|event| event.box?(objbox, through) }
+    map_events.select {|event| event.box?(objbox, through) }
+  end
+  #--------------------------------------------------------------------------
+  # * Get events on map
+  #--------------------------------------------------------------------------
+  def map_events
+    @events.values
   end
   #--------------------------------------------------------------------------
   # * Setup Passibilities
