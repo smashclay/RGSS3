@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4.1
+# ** Quasi v0.4.2
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -16,7 +16,7 @@ module Quasi
   # * Master volume control.  VXA default sounds are too loud on my pc
   #   so I have it set at -70 when testing scripts.
   #--------------------------------------------------------------------------
-  VOLUME = -70
+  VOLUME = -50
   #--------------------------------------------------------------------------
   # * Allows for a quick test by skipping the title screen starting a 
   # new game.  Only works when play testing.
@@ -80,6 +80,8 @@ module Quasi
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v0.4.2 - 12/9/14
+#        - Fixed issue with Quick Test and Battle Testing
 # v0.4.1 - 12/6/14
 #        - Added 3 new params, hrt, mrt, trt (similar to hgr, mgr, tgr)
 #          - These new params allow for a fixed increase of regen instead of a %
@@ -178,7 +180,7 @@ module SceneManager
   # * Execute
   #--------------------------------------------------------------------------
   def self.run
-    if Quasi::QUICKTEST && $TEST
+    if Quasi::QUICKTEST && $TEST && !$BTEST
       DataManager.init
       Audio.setup_midi if use_midi?
       DataManager.setup_new_game
