@@ -517,7 +517,7 @@ class Scene_Base
   # * Wait
   #--------------------------------------------------------------------------
   def wait(duration)
-    duration.times {|i| update_basic if i < duration }
+    duration.times {update_basic}
   end
 end
 
