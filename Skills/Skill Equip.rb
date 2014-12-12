@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Skill Equip v 1.1
+# ** Quasi Skill Equip v 2.0
 #  Require Module Quasi
 #   http://code.quasixi.com/page/post/quasi+module/
 #==============================================================================
