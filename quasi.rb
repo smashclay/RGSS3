@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4.2
+# ** Quasi v0.4.3
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -16,12 +16,12 @@ module Quasi
   # * Master volume control.  VXA default sounds are too loud on my pc
   #   so I have it set at -70 when testing scripts.
   #--------------------------------------------------------------------------
-  VOLUME = -50
+  VOLUME = 0
   #--------------------------------------------------------------------------
   # * Allows for a quick test by skipping the title screen starting a 
   # new game.  Only works when play testing.
   #--------------------------------------------------------------------------
-  QUICKTEST = true
+  QUICKTEST = false
   #--------------------------------------------------------------------------
   # * Set to true to use quasis follower mod, or false to ignore quasis 
   # follower mod.  With quasis mod, followers are only created when they
@@ -80,6 +80,9 @@ module Quasi
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v0.4.3 - 12/14/14
+#        - Changed regenerate_hp/mp/tp to overwrites to work with
+#          Yanfly popup damage.
 # v0.4.2 - 12/9/14
 #        - Fixed issue with Quick Test and Battle Testing
 # v0.4.1 - 12/6/14
@@ -99,7 +102,7 @@ module Quasi
 # --
 # v0.1 - Pre-Released for movement script
 #==============================================================================#
-# By Quasi (http://quasixi.wordpress.com/)
+# By Quasi (http://quasixi.com/) || (https://github.com/quasixi/RGSS3)
 #  - 11/11/14
 #==============================================================================#
 #   ** Stop! Do not edit anything below, unless you know what you      **
@@ -159,7 +162,7 @@ module Quasi
 end
 
 $imported = {} if $imported.nil?
-$imported["Quasi"] = 0.4
+$imported["Quasi"] = 0.43
 
 #==============================================================================
 # ** SceneManager
@@ -240,15 +243,11 @@ end
 #==============================================================================
 
 class Game_Battler < Game_BattlerBase
-  alias qgb_reghp  regenerate_hp
-  alias qgb_regmp  regenerate_mp
-  alias qgb_regtp  regenerate_tp
   #--------------------------------------------------------------------------
   # * Regenerate HP
   #--------------------------------------------------------------------------
   def regenerate_hp
-    qgb_reghp
-    damage = -(hrt).to_i
+    damage = -(mhp * hrg).to_i - hrt
     perform_map_damage_effect if $game_party.in_battle && damage > 0
     @result.hp_damage = [damage, max_slip_damage].min
     self.hp -= @result.hp_damage
@@ -257,16 +256,14 @@ class Game_Battler < Game_BattlerBase
   # * Regenerate MP
   #--------------------------------------------------------------------------
   def regenerate_mp
-    qgb_regmp
-    @result.mp_damage = -(mrt).to_i
+    @result.mp_damage = -(mmp * mrg).to_i - mrt
     self.mp -= @result.mp_damage
   end
   #--------------------------------------------------------------------------
   # * Regenerate TP
   #--------------------------------------------------------------------------
   def regenerate_tp
-    qgb_regtp
-    self.tp += trt
+    self.tp += 100 * trg + trt
   end
 end
 
@@ -516,8 +513,8 @@ class Scene_Base
   #--------------------------------------------------------------------------
   # * Wait
   #--------------------------------------------------------------------------
-  def wait(duration)
-    duration.times {update_basic}
+  def wait_basic(duration)
+    duration.times{ update_basic }
   end
 end
 
