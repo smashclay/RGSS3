@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4.3
+# ** Quasi v0.4.4
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -16,12 +16,12 @@ module Quasi
   # * Master volume control.  VXA default sounds are too loud on my pc
   #   so I have it set at -70 when testing scripts.
   #--------------------------------------------------------------------------
-  VOLUME = 0
+  VOLUME = -50
   #--------------------------------------------------------------------------
   # * Allows for a quick test by skipping the title screen starting a 
   # new game.  Only works when play testing.
   #--------------------------------------------------------------------------
-  QUICKTEST = false
+  QUICKTEST = true
   #--------------------------------------------------------------------------
   # * Set to true to use quasis follower mod, or false to ignore quasis 
   # follower mod.  With quasis mod, followers are only created when they
@@ -80,11 +80,16 @@ module Quasi
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v0.4.4 - 12/19/14
+#        - Fixed String.int? to accept negative values
+# --
 # v0.4.3 - 12/14/14
 #        - Changed regenerate_hp/mp/tp to overwrites to work with
 #          Yanfly popup damage.
+# --
 # v0.4.2 - 12/9/14
 #        - Fixed issue with Quick Test and Battle Testing
+# --
 # v0.4.1 - 12/6/14
 #        - Added 3 new params, hrt, mrt, trt (similar to hgr, mgr, tgr)
 #          - These new params allow for a fixed increase of regen instead of a %
@@ -162,7 +167,7 @@ module Quasi
 end
 
 $imported = {} if $imported.nil?
-$imported["Quasi"] = 0.43
+$imported["Quasi"] = 0.44
 
 #==============================================================================
 # ** SceneManager
@@ -474,11 +479,10 @@ end
 #==============================================================================
 
 class Sprite_Base < Sprite
-  alias quasi_start_animation start_animation
-  alias quasi_animation_set animation_set_sprites
   #--------------------------------------------------------------------------
   # * Start Animation
   #--------------------------------------------------------------------------
+  alias :quasi_start_animation  :start_animation
   def start_animation(animation, mirror = false)
     quasi_start_animation(animation, mirror)
     if @animation
@@ -489,6 +493,7 @@ class Sprite_Base < Sprite
   # * Set Animation Sprite
   #     frame : Frame data (RPG::Animation::Frame)
   #--------------------------------------------------------------------------
+  alias :quasi_animation_set  :animation_set_sprites
   def animation_set_sprites(frame)
     quasi_animation_set(frame)
     return if @rand == 0
@@ -513,8 +518,8 @@ class Scene_Base
   #--------------------------------------------------------------------------
   # * Wait
   #--------------------------------------------------------------------------
-  def wait_basic(duration)
-    duration.times{ update_basic }
+  def wait(duration)
+    duration.times { update_basic }
   end
 end
 
@@ -611,7 +616,7 @@ class String
   # * Checks if string only contains numbers
   #--------------------------------------------------------------------------
   def int?
-    return self !~ /\D/ 
+    self.to_i.to_s == self
   end
   #--------------------------------------------------------------------------
   # * Checks if string is in Symbol format
