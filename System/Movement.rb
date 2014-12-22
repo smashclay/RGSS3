@@ -2,6 +2,8 @@
 # ** Quasi Movement v1.2
 #  Require Module Quasi [version 0.4.4 +]
 #   http://code.quasixi.com/page/post/quasi+module/
+#  Terms of use
+#   http://quasixi.com/page/terms
 #==============================================================================
 #  Changed how movement works.  Allows players to choose how many pixels to move
 # per movement.  In better terms, allows players to make characters have a pixel
