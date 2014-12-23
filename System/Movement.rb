@@ -28,7 +28,7 @@ module Quasi
 #  Default is 1, meaning pixel movement.  This can be changed back
 #  to 32 which is vxa default tile movement.
 #------------------------------------------------------------------------------
-    GRID      = 32
+    GRID      = 1
 #------------------------------------------------------------------------------
 # Optimizing settings:
 #  SMARTMOVE
@@ -41,7 +41,7 @@ module Quasi
 #    :dir    tries different similiar directions if move failed (DIR8 needs to be true)
 #    :both   both :speed and :dir
 #------------------------------------------------------------------------------
-    SMARTMOVE = false
+    SMARTMOVE = :both
 #------------------------------------------------------------------------------
 #  MIDPASS
 #      An extra collision check for the midpoint of the movement.  Should be
@@ -50,7 +50,7 @@ module Quasi
 #    (Default passibilty only checks if you collided with anything at the point
 #     you moved to, not anything inbetween)
 #------------------------------------------------------------------------------
-    MIDPASS   = true
+    MIDPASS   = false
 #------------------------------------------------------------------------------
 #    Set DIR8 to true or false.  When true it will allow for 8 direction
 #  movement, when false it will not.
