@@ -137,6 +137,8 @@ end
 #------------------------------------------------------------------------------
 # v1.2.1 - 12/23/14
 #      - Fixed some disposing problems with showbox
+#      - Fixed bug where characters can move off map screen with through
+# --
 # v1.2 - 12/19/14
 #      - Events face right direction when talked too
 #      - Vehicle getting on / off fixed
@@ -434,9 +436,7 @@ class Game_CharacterBase
     y1 = d == 8 ? y - move_tiles : d == 2 ? y + move_tiles : y
     x2 = $game_map.round_px(x1)
     y2 = $game_map.round_py(y1)
-    x3 = $game_map.round_x((x1/32.0).round)
-    y3 = $game_map.round_y((y1/32.0).round)
-    return false unless $game_map.valid?(x3, y3)
+    return false unless valid?(x2, y2, d)
     return true if @through || debug_through?
     return false unless midpassable?(x, y, d) if Quasi::Movement::MIDPASS
     return false unless tilebox_passable?(x2, y2, d)
@@ -455,6 +455,19 @@ class Game_CharacterBase
       tilebox_passable?(x2, y2, reverse_dir(d))
     return false if collide_with_box?(x2, y2)
     return true
+  end
+  #--------------------------------------------------------------------------
+  # * Determine if player is still on map
+  #--------------------------------------------------------------------------
+  def valid?(x, y, d)
+    edge = edge32(x, y, d)
+    mw = $game_map.width
+    mh = $game_map.height
+    valid1_x = edge[0][0] >= 0 && edge[1][0] >= 0
+    valid2_x = edge[0][0] < mw && edge[1][0] < mw
+    valid1_y = edge[0][1] >= 0 && edge[1][1] >= 0
+    valid2_y = edge[0][1] < mh && edge[1][1] < mh
+    return valid1_x && valid2_x && valid1_y && valid2_y
   end
   #--------------------------------------------------------------------------
   # * Determine if Tile is Passable
@@ -785,10 +798,11 @@ class Game_CharacterBase
   #--------------------------------------------------------------------------
   def edge32(x=@px, y=@py, dir=@direction)
     edge = edge(x, y, dir)
-    x1 = (edge[0][0] / 32.0).truncate
-    x2 = (edge[1][0] / 32.0).truncate
-    y1 = (edge[0][1] / 32.0).truncate
-    y2 = (edge[1][1] / 32.0).truncate
+    x1 = (edge[0][0] / 32.0).floor
+    x2 = (edge[1][0] / 32.0).floor
+    y1 = (edge[0][1] / 32.0).floor
+    y2 = (edge[1][1] / 32.0).floor
+    
     return [[x1,  y1], [x2, y2]]
   end
 end
