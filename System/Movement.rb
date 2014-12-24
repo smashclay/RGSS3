@@ -1,9 +1,7 @@
 #==============================================================================
-# ** Quasi Movement v1.2
+# ** Quasi Movement v1.2.1
 #  Require Module Quasi [version 0.4.4 +]
 #   http://code.quasixi.com/page/post/quasi+module/
-#  Terms of use
-#   http://quasixi.com/page/terms
 #==============================================================================
 #  Changed how movement works.  Allows players to choose how many pixels to move
 # per movement.  In better terms, allows players to make characters have a pixel
@@ -56,7 +54,7 @@ module Quasi
 #  movement, when false it will not.
 #  (This does not include an 8 direction frame)
 #------------------------------------------------------------------------------
-    DIR8      = false
+    DIR8      = true
 #------------------------------------------------------------------------------
 #    DIAGSPEED.  This adjusts the speed when moving diagonal.  Set to
 #  0 if you want to stay at same speed.  Floats and negative values
@@ -137,6 +135,8 @@ end
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v1.2.1 - 12/23/14
+#      - Fixed some disposing problems with showbox
 # v1.2 - 12/19/14
 #      - Events face right direction when talked too
 #      - Vehicle getting on / off fixed
@@ -203,9 +203,8 @@ end
 #------------------------------------------------------------------------------
 # To do / Upcoming
 #------------------------------------------------------------------------------
-# - Continue to work on Followers / Vehicles
-# - Region locked events (Add-on)
 # - Find more bugs
+# - Make a pathfinder that works with this
 #==============================================================================
 #==============================================================================#
 # By Quasi (http://quasixi.com/) || (https://github.com/quasixi/RGSS3)
@@ -214,11 +213,11 @@ end
 #   ** Stop! Do not edit anything below, unless you know what you      **
 #   ** are doing!                                                      **
 #==============================================================================#
-$imported = {} unless $imported
-$imported["Quasi_Movement"] = 1.2
-$imported["Quasi"] ||= 0
+$imported = {} if $imported.nil?
+$imported["Quasi"] = 0 if $imported["Quasi"].nil?
+$imported["Quasi_Movement"] = 1.21
 
-if $imported["Quasi"] >= 0.44
+if $imported["Quasi"] >= 0.43
 #==============================================================================
 # ** Game_Map
 #------------------------------------------------------------------------------
@@ -1128,8 +1127,8 @@ class Game_Player < Game_Character
     return if !movable? || $game_map.interpreter.running?
     if Quasi::Movement::DIR8
       if Input.dir8 > 0
-        dia = {7 => [4,8], 1 => [4,2], 9 => [6,8], 3 => [6,2]}
-        if [1,7,9,3].include?(Input.dir8)
+        dia = {7 => [4, 8], 1 => [4, 2], 9 => [6, 8], 3 => [6, 2]}
+        if [1, 7, 9, 3].include?(Input.dir8)
           move_diagonal(dia[Input.dir8][0], dia[Input.dir8][1])
         else
           move_straight(Input.dir8)
@@ -1435,10 +1434,21 @@ class Sprite_Character < Sprite_Base
   #--------------------------------------------------------------------------
   # * Frame Update
   #--------------------------------------------------------------------------
-  alias qbox_update   update
+  alias :qbox_update   :update
   def update
     qbox_update
     update_box if @box_sprite
+  end
+  #--------------------------------------------------------------------------
+  # * Free
+  #--------------------------------------------------------------------------
+  alias :qbox_dispose   :dispose
+  def dispose
+    if @box_sprite
+      @box_sprite.bitmap.dispose if @box_sprite.bitmap
+      @box_sprite.dispose
+    end
+    qbox_dispose
   end
   #--------------------------------------------------------------------------
   # * Start Box Display
@@ -1507,7 +1517,6 @@ class Spriteset_Map
   #--------------------------------------------------------------------------
   def create_boxes
     return unless $game_map
-    @box_sprite = []
     @box_sprite = Sprite.new
     @box_sprite.bitmap = Bitmap.new(32*$game_map.width, 32*$game_map.height)
     @box_sprite.blend_type = Quasi::Movement::BOXBLEND
@@ -1536,13 +1545,20 @@ class Spriteset_Map
     @box_sprite.bitmap.fill_rect(rect, Quasi::Movement::BOXCOLOR)
   end
   #--------------------------------------------------------------------------
-  # * Free
+  # * Free Tilebox
   #--------------------------------------------------------------------------
-  alias :qbox_sm_dispose    :dispose
-  def dispose
-    qbox_sm_dispose
+  def dispose_tilebox
     @box_sprite.bitmap.dispose if @box_sprite.bitmap
     @box_sprite.dispose
+  end
+  #--------------------------------------------------------------------------
+  # * Refresh Characters
+  #--------------------------------------------------------------------------
+  alias :qbox_sm_refresh    :refresh_characters
+  def refresh_characters
+    qbox_sm_refresh
+    dispose_tilebox
+    create_boxes
   end
   #--------------------------------------------------------------------------
   # * Frame Update
