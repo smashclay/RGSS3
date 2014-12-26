@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Movement v1.2.1
+# ** Quasi Movement v1.2.2
 #  Require Module Quasi [version 0.4.4 +]
 #    http://code.quasixi.com/page/post/quasi+module/
 #  If links are down, try my github
@@ -137,6 +137,8 @@ end
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v1.2.2 - 12/25/14
+#      - Small fix with vehicle, forgot to put it as absolute value
 # v1.2.1 - 12/23/14
 #      - Fixed some disposing problems with showbox
 #      - Fixed bug where characters can move off map screen with through
@@ -219,7 +221,7 @@ end
 #==============================================================================#
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
-$imported["Quasi_Movement"] = 1.21
+$imported["Quasi_Movement"] = 1.22
 
 if $imported["Quasi"] >= 0.43
 #==============================================================================
@@ -596,10 +598,10 @@ class Game_CharacterBase
   def p_moveto(px, py)
     @px = px % ($game_map.width*32)
     @py = py % ($game_map.height*32)
-    @x = @px / 32.0
-    @y = @py / 32.0
-    @real_x = @x
-    @real_y = @y
+    @x = @px / 32
+    @y = @py / 32
+    @real_x = @px / 32.0
+    @real_y = @py / 32.0
     @prelock_direction = 0
     straighten
     update_bush_depth
@@ -1202,8 +1204,8 @@ class Game_Player < Game_Character
   #    Assumes that the player is not currently in a vehicle.
   #--------------------------------------------------------------------------
   def get_on_vehicle
-    front_x = $game_map.round_px_with_direction(@px, @direction, move_tiles)
-    front_y = $game_map.round_py_with_direction(@py, @direction, move_tiles)
+    front_x = $game_map.round_px_with_direction(@px, @direction, 32)
+    front_y = $game_map.round_py_with_direction(@py, @direction, 32)
     @vehicle_type = :airship if $game_map.airship.box?(box_xy)
     @vehicle_type = :boat    if $game_map.boat.box?(box_xy(front_x, front_y))
     @vehicle_type = :ship    if $game_map.ship.box?(box_xy(front_x, front_y))
@@ -1226,7 +1228,7 @@ class Game_Player < Game_Character
       end
       update_move while moving?
       set_direction(dir)
-      force_move_towards(dist)
+      force_move_towards(dist.abs)
       @followers.gather
     end
     @vehicle_getting_on
