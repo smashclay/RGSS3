@@ -1,7 +1,9 @@
 #==============================================================================
 # ** Quasi Movement v1.2.1
 #  Require Module Quasi [version 0.4.4 +]
-#   http://code.quasixi.com/page/post/quasi+module/
+#    http://code.quasixi.com/page/post/quasi+module/
+#  If links are down, try my github
+#    https://github.com/quasixi/RGSS3
 #==============================================================================
 #  Changed how movement works.  Allows players to choose how many pixels to move
 # per movement.  In better terms, allows players to make characters have a pixel
