@@ -1,7 +1,7 @@
 #==============================================================================
 # ** Quasi Shop v 2.0
 #  Require Module Quasi
-#   http://code.quasixi.com/page/post/quasi+module/
+#   http://quasixi.com/quasi-module/
 #==============================================================================
 # This script generates shops with random items.  Items probability chance can
 # be modified with note tags.  Default probability chance is to get set below.
