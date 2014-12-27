@@ -1,7 +1,7 @@
 ==============================================================================
 # ** Quasi Passive v 2.1
 #  Require Module Quasi
-#   http://code.quasixi.com/page/post/quasi+module/
+#   http://quasixi.com/quasi-module/
 #==============================================================================
 #  Allows characters to learn and equip passive skills.  Passive skills are
 # skills that act like buffs and increase parameters.  If you enable Passive
@@ -26,7 +26,7 @@
 #  For compatibility with Quasi Skill Equip and/or Quasi Skill Type Equip
 # use Quasi Equip Patches:
 #
-#  http://code.quasixi.com/page/post/4/
+#  http://quasixi.com/quasi-equip-series-patch/
 #
 #  That script should go below all 3 of those scripts.
 #-----------------------------------------------------------------------------
