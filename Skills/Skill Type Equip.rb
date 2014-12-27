@@ -1,7 +1,7 @@
 #==============================================================================
 # ** Quasi Skill Type Equip v 3.0
 #  Require Module Quasi
-#   http://code.quasixi.com/page/post/quasi+module/
+#   http://quasixi.com/quasi-module/
 #==============================================================================
 #  Allows players to equip skill types, the skill types the player can choose
 # are from the skill type he has unlocked.  The player can also equip skill
@@ -18,7 +18,7 @@
 #  For compatibility with Quasi Skill Equip and/or Quasi Passive
 # use Quasi Equip Patches:
 #
-#  http://code.quasixi.com/page/post/Quasi+Equip+Series+Patch/
+#  http://quasixi.com/quasi-equip-series-patch/
 #
 #  That script should go below all 3 of those scripts.
 #------------------------------------------------------------------------------
