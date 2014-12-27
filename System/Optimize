@@ -1,7 +1,7 @@
 #==============================================================================
 # ** Quasi Optimize v 0.6
 #  Requires Quasi Movement [version 1.1.5+]
-#   http://code.quasixi.com/page/post/movement/
+#   http://quasixi.com/movement/
 #==============================================================================
 #  Optimizes Quasi Movement for higher performance.  Like all other anti-lag
 # event scripts, this only keeps events that are on/near the screen.  If they
