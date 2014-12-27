@@ -1,7 +1,7 @@
 #==============================================================================
 # ** Quasi Skill Equip v 2.0
 #  Require Module Quasi
-#   http://code.quasixi.com/page/post/quasi+module/
+#   http://quasixi.com/quasi-module/
 #==============================================================================
 # Allows players to equip skills
 # - Player needs to know the skills to be able to equip them!
@@ -19,7 +19,7 @@
 #  For compatibility with Quasi Passive and/or Quasi Skill Type Equip
 # use Quasi Equip Patches:
 #
-#  http://code.quasixi.com/page/post/Quasi+Equip+Series+Patch/
+#  http://quasixi.com/quasi-equip-series-patch/
 #
 #  That script should go below all 3 of those scripts.
 #------------------------------------------------------------------------------
