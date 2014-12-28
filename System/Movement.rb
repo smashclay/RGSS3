@@ -4,6 +4,12 @@
 #    http://code.quasixi.com/page/post/quasi+module/
 #  If links are down, try my github
 #    https://github.com/quasixi/RGSS3
+#=============================================================================
+# **IMPORTANT** 
+# Avoid using random moving if possible!  There is currently a bug where  
+# Events with random move route get their boxes stuck together, when they are
+# stuck you will lose 30+ frames, if the player was stuck with an event
+# you will freeze and eventually rgss3 will stop responding.
 #==============================================================================
 #  Changed how movement works.  Allows players to choose how many pixels to move
 # per movement.  In better terms, allows players to make characters have a pixel
