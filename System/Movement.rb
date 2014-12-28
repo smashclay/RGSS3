@@ -1,7 +1,7 @@
 #==============================================================================
 # ** Quasi Movement v1.2.2
 #  Require Module Quasi [version 0.4.4 +]
-#    http://quasixi.com/quasi-module/
+#    http://code.quasixi.com/page/post/quasi+module/
 #  If links are down, try my github
 #    https://github.com/quasixi/RGSS3
 #==============================================================================
@@ -18,7 +18,7 @@
 #  - Follow instructions below
 #
 # Extra instructions + Bounding box setup help at:
-#  http://quasixi.com/movement/
+#  http://code.quasixi.com/page/post/movement/
 #==============================================================================
 module Quasi
   module Movement
@@ -56,7 +56,7 @@ module Quasi
 #  movement, when false it will not.
 #  (This does not include an 8 direction frame)
 #------------------------------------------------------------------------------
-    DIR8      = true
+    DIR8       = true
 #------------------------------------------------------------------------------
 #    DIAGSPEED.  This adjusts the speed when moving diagonal.  Set to
 #  0 if you want to stay at same speed.  Floats and negative values
@@ -137,7 +137,11 @@ end
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
-# v1.2.2 - 12/25/14
+# v1.2.3 - 12/26/14
+#      - Added new method in characterbase for dir8 sprite compatibility
+#        (New method is dir8enable?, by default it is false, when it's true
+#         it will allow for direction also be 1, 3, 7, or 9)
+# v1.2.2 - 12/25/12
 #      - Small fix with vehicle, forgot to put it as absolute value
 # v1.2.1 - 12/23/14
 #      - Fixed some disposing problems with showbox
@@ -221,7 +225,7 @@ end
 #==============================================================================#
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
-$imported["Quasi_Movement"] = 1.22
+$imported["Quasi_Movement"] = 1.23
 
 if $imported["Quasi"] >= 0.43
 #==============================================================================
@@ -429,7 +433,6 @@ class Game_CharacterBase
       9 => [6, 8],    7 => [4, 8],
       3 => [6, 2],    1 => [4, 2]
     }
-    @dir8sprites = Quasi::Sprite::DIR8SPRITES if $imported["Quasi_Sprite"]
   end
   #--------------------------------------------------------------------------
   # * Determine if Passable
@@ -708,9 +711,8 @@ class Game_CharacterBase
     end
     @move_speed = orginal_speed
     @velocity = 0 unless @move_succeed
-    if @dir8sprites
+    if dir8enable?
       set_direction(@dir8.key([horz, vert]))
-      dir_set = true
     else
       set_direction(horz) if @direction == reverse_dir(horz)
       set_direction(vert) if @direction == reverse_dir(vert)
@@ -755,6 +757,13 @@ class Game_CharacterBase
       increase_steps
     end
     @velocity = 0 unless @move_succeed
+  end
+  #--------------------------------------------------------------------------
+  # * Check if dir8 sprites enabled
+  # if true direction can also be 1, 3, 7, 9
+  #--------------------------------------------------------------------------
+  def dir8enable?
+    return false
   end
   #--------------------------------------------------------------------------
   # * Bounding box array
