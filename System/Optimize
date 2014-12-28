@@ -1,7 +1,7 @@
 #==============================================================================
-# ** Quasi Optimize v 0.6
+# ** Quasi Optimize v 0.7
 #  Requires Quasi Movement [version 1.1.5+]
-#   http://quasixi.com/movement/
+#   http://code.quasixi.com/page/post/movement/
 #==============================================================================
 #  Optimizes Quasi Movement for higher performance.  Like all other anti-lag
 # event scripts, this only keeps events that are on/near the screen.  If they
@@ -29,13 +29,13 @@ module Quasi
 end
 #==============================================================================#
 # By Quasi (http://quasixi.com/) || (https://github.com/quasixi/RGSS3)
-#  - 12/6/14
+#  - 9/22/14
 #==============================================================================#
 #   ** Stop! Do not edit anything below, unless you know what you      **
 #   ** are doing!                                                      **
 #==============================================================================#
 $imported = {} if $imported.nil?
-$imported["Quasi_Optimize"] = 0.6
+$imported["Quasi_Optimize"] = 0.7
 
 if $imported["Quasi_Movement"]
 #==============================================================================
@@ -46,25 +46,24 @@ if $imported["Quasi_Movement"]
 #==============================================================================
 
 class Game_Map
-  alias qopt_gm_setup        setup
-  alias qopt_gm_set_display  set_display_pos
-  alias qopt_gm_ups          update
   #--------------------------------------------------------------------------
   # * Setup
   #--------------------------------------------------------------------------
+  alias :qopt_gm_setup    :setup
   def setup(map_id)
     qopt_gm_setup(map_id)
     @onscreenevents = []
   end
   #--------------------------------------------------------------------------
-  # * Get events on map
+  # * Get all events on screen
   #--------------------------------------------------------------------------
   def map_events
-    return screen_events
+    return @onscreenevents
   end
   #--------------------------------------------------------------------------
   # * Set Display Position
   #--------------------------------------------------------------------------
+  alias :qopt_gm_set_display    :set_display_pos
   def set_display_pos(x, y)
     qopt_gm_set_display(x, y)
     setup_onscreenevents
@@ -77,7 +76,7 @@ class Game_Map
     hy = 2
     screenx = (@display_x.truncate-hx)..(@display_x.truncate+screen_tile_x+hx)
     screeny = (@display_y.truncate-hy)..(@display_y.truncate+screen_tile_y+hy)
-    oldevents = @onscreenevents
+    oldevents = map_events
     for x in screenx
       for y in screeny
         e = @events.values.select{|event| event.pos?(x, y)}
@@ -90,7 +89,7 @@ class Game_Map
         end
       end
     end
-    remove = oldevents - @onscreenevents
+    remove = oldevents - map_events
     unless remove.empty?
       if SceneManager.scene_is?(Scene_Map)
         remove.each{|e| SceneManager.scene.spriteset_remove(e.id)}
@@ -98,26 +97,61 @@ class Game_Map
     end
   end
   #--------------------------------------------------------------------------
-  # * Returns on screen events
-  #--------------------------------------------------------------------------
-  def screen_events
-    return @onscreenevents
-  end
-  #--------------------------------------------------------------------------
   # * Frame Update
   #     main:  Interpreter update flag
   #--------------------------------------------------------------------------
+  alias :qopt_gm_ups    :update
   def update(main = false)
     qopt_gm_ups(main)
     update_screenevents
   end
   
   def update_screenevents
-    @needsupdate = $game_player.update_lastgridpos?
-    if @needsupdate
-      setup_onscreenevents
-      @needsupdate = false
+    return unless $game_player.update_lastgridpos?
+    setup_onscreenevents
+  end
+end
+
+#==============================================================================
+# ** Game_CharacterBase
+#------------------------------------------------------------------------------
+#  This base class handles characters. It retains basic information, such as 
+# coordinates and graphics, shared by all characters.
+#==============================================================================
+
+class Game_CharacterBase
+  #--------------------------------------------------------------------------
+  # * Initialize Quasi Movement setting variables
+  #--------------------------------------------------------------------------
+  alias :qopt_gcb_init    :init_quasi_variables
+  def init_quasi_variables
+    qopt_gcb_init
+    @lasttile = []
+    @lastbox  = []
+  end
+  #--------------------------------------------------------------------------
+  # * Determine if Tile is Passable
+  #--------------------------------------------------------------------------
+  alias :qopt_gcb_tilebox   :tilebox_passable?
+  def tilebox_passable?(x, y, d)
+    return false if @lasttile.include?([x, y, d])
+    if qopt_gcb_tilebox(x, y, d)
+      @lasttile << [x, y, d] 
+      @lasttile.shift if @lasttile.length > 2
     end
+    return @lasttile.include?([x, y, d])
+  end
+  #--------------------------------------------------------------------------
+  # * Detect Collision with Character 
+  #--------------------------------------------------------------------------
+  alias :qopt_gcb_box   :collide_with_box?
+  def collide_with_box?(x, y)
+    return true if @lastbox.include?([x, y])
+    unless qopt_gcb_box(x, y)
+      @lastbox << [x, y] 
+      @lastbox.shift if @lastbox.length > 2
+    end
+    return !@lastbox.include?([x, y])
   end
 end
 
@@ -130,25 +164,13 @@ end
 #==============================================================================
 
 class Game_Character < Game_CharacterBase
-  alias qopt_gc_init   init_public_members
   #--------------------------------------------------------------------------
   # * Initialize Public Member Variables
   #--------------------------------------------------------------------------
-  def init_public_members
+  alias :qopt_gc_init   :init_private_members
+  def init_private_members
     qopt_gc_init
-    @last_pos = [0, 0]
     @last_gridpos = [0, 0]
-    @last_dir = 0
-  end
-  #--------------------------------------------------------------------------
-  # * Checks last position
-  #--------------------------------------------------------------------------
-  def update_lastpos?
-    if @last_pos != [@px, @py]
-      @last_pos = [@px, @py]
-      return true
-    end
-    return false
   end
   #--------------------------------------------------------------------------
   # * Checks last grid position
@@ -156,16 +178,6 @@ class Game_Character < Game_CharacterBase
   def update_lastgridpos?
     if @last_gridpos != [@x, @y]
       @last_gridpos = [@x, @y]
-      return true
-    end
-    return false
-  end
-  #--------------------------------------------------------------------------
-  # * Checks last direction
-  #--------------------------------------------------------------------------
-  def update_dir?
-    if @last_dir != @direction
-      @last_dir = @direction
       return true
     end
     return false
@@ -181,12 +193,12 @@ end
 #==============================================================================
 
 class Game_Event < Game_Character
-  alias qopt_ge_near   near_the_screen?
   #--------------------------------------------------------------------------
   # * Determine if Near Visible Area of Screen
   #     dx:  A certain number of tiles left/right of screen's center
   #     dy:  A certain number of tiles above/below screen's center
   #--------------------------------------------------------------------------
+  alias :qopt_ge_near    :near_the_screen?
   def near_the_screen?(dx = 12, dy = 8)
     if Quasi::Optimize::EVENTMOVE
       return true
@@ -220,8 +232,6 @@ end
 #==============================================================================
 
 class Spriteset_Map
-  alias qopt_sm_upc   update_characters
-  alias qopt_sm_disc  dispose_characters
   #--------------------------------------------------------------------------
   # * Create Character Sprite
   # * OVERWRITE
@@ -229,7 +239,7 @@ class Spriteset_Map
   def create_characters
     @character_sprites = []
     @event_sprites = {}
-    @screenevents = $game_map.screen_events
+    @screenevents = $game_map.map_events
     @screenevents.each do |event|
       add_event(event)
     end
@@ -245,6 +255,7 @@ class Spriteset_Map
   #--------------------------------------------------------------------------
   # * Update Character Sprite
   #--------------------------------------------------------------------------
+  alias :qopt_sm_upc    :update_characters
   def update_characters
     qopt_sm_upc
     @event_sprites.each_value{|sprite| sprite.update }
@@ -252,6 +263,7 @@ class Spriteset_Map
   #--------------------------------------------------------------------------
   # * Free Character Sprite
   #--------------------------------------------------------------------------
+  alias :qopt_sm_disc   :dispose_characters
   def dispose_characters
     qopt_sm_disc
     @event_sprites.each_value{|sprite| sprite.dispose }
