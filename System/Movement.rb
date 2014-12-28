@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Movement v1.2.2
+# ** Quasi Movement v1.2.23
 #  Require Module Quasi [version 0.4.4 +]
 #    http://code.quasixi.com/page/post/quasi+module/
 #  If links are down, try my github
@@ -104,7 +104,7 @@ module Quasi
 #  Only shows during play testing.
 #  *Does not show region boxes!*
 #------------------------------------------------------------------------------
-    SHOWBOXES   = true
+    SHOWBOXES   = false
     BOXBLEND    = 0
     BOXCOLOR    = Color.new(255, 0, 0, 120)
 #------------------------------------------------------------------------------
@@ -1537,13 +1537,14 @@ class Spriteset_Map
   alias :qbox_sm_init    :initialize
   def initialize
     qbox_sm_init
-    create_boxes if Quasi::Movement::SHOWBOXES && $TEST
+    create_boxes
   end
   #--------------------------------------------------------------------------
   # * Start Box Display
   #--------------------------------------------------------------------------
   def create_boxes
     return unless $game_map
+    return unless Quasi::Movement::SHOWBOXES && $TEST
     @box_sprite = Sprite.new
     @box_sprite.bitmap = Bitmap.new(32*$game_map.width, 32*$game_map.height)
     @box_sprite.blend_type = Quasi::Movement::BOXBLEND
@@ -1575,6 +1576,7 @@ class Spriteset_Map
   # * Free Tilebox
   #--------------------------------------------------------------------------
   def dispose_tilebox
+    return unless @box_sprite
     @box_sprite.bitmap.dispose if @box_sprite.bitmap
     @box_sprite.dispose
   end
