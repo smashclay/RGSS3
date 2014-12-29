@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4.5
+# ** Quasi v0.4.6
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -80,8 +80,12 @@ module Quasi
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v0.4.5 - 12/28/14
+#        - Fixed typo in the Hex color method
+# --
 # v0.4.5 - 12/23/14
 #        - Added Hex color code compatibility
+# --
 # v0.4.4 - 12/19/14
 #        - Fixed String.int? to accept negative values
 # --
@@ -171,14 +175,14 @@ module Quasi
   #--------------------------------------------------------------------------
   def self.color(hex, alpha=255)
     r = hex[0, 2].to_i(16)
-    b = hex[2, 2].to_i(16)
-    g = hex[4, 2].to_i(16)
+    g = hex[2, 2].to_i(16)
+    b = hex[4, 2].to_i(16)
     return Color.new(r, g, b, alpha)
   end
 end
 
 $imported = {} if $imported.nil?
-$imported["Quasi"] = 0.44
+$imported["Quasi"] = 0.45
 
 #==============================================================================
 # ** SceneManager
