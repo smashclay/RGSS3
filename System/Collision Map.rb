@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Collision Map v1.1
+# ** Quasi Collision Map v1.2
 #  Requires Quasi Movement [version 1.2.1 +]
 #    http://quasixi.com/movement/
 #  Requires Quasi Module [version 0.4.5]
@@ -65,6 +65,9 @@ end
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v1.2 - 12/29/14
+#      - Fixed a bug, forgot to readd update method
+# --
 # v1.1 - 12/28/14
 #      - Fixed a bug with disposed bitmap
 # --
@@ -79,7 +82,7 @@ end
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
 $imported["Quasi_Movement"] = 0 if $imported["Quasi_Movement"].nil?
-$imported["Quasi_CollisionMap"] = 1.1
+$imported["Quasi_CollisionMap"] = 1.2
 
 if $imported["Quasi_Movement"] >= 1.23 && $imported["Quasi"] >= 0.45
 
@@ -231,6 +234,7 @@ class Spriteset_Map
   alias :cmap_sm_update   :update
   def update
     cmap_sm_update
+    update_cmap
   end
   #--------------------------------------------------------------------------
   # * Update Collision Map
