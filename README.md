@@ -1,7 +1,7 @@
 RGSS3
 =====
 
-Terms of Use for Non-Commercial and Commercial (Non-Supporter):
+<b>Terms of Use for Non-Commercial and Commercial (Non-Supporter):</b>
 
 Free to use.
 Do not claim the scripts as your own.
@@ -13,7 +13,7 @@ Any bugs reported will have low priority depending on the script.
 I will not make compatibility patches.
  
 
-Terms of Use for Non-Commercial and Commercial (Supporters):
+<b>Terms of Use for Non-Commercial and Commercial (Supporters):</b>
 
 Same Terms as Non-Supporter, some are modified below.
 Bug reports have higher priority.
