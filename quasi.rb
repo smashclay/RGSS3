@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4.6
+# ** Quasi v0.4.7
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -80,7 +80,10 @@ module Quasi
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
-# v0.4.5 - 12/28/14
+# v0.4.7 - 12/28/14
+#        - Fixed bug in grab_comment method
+# --
+# v0.4.6 - 12/28/14
 #        - Fixed typo in the Hex color method
 # --
 # v0.4.5 - 12/23/14
@@ -435,7 +438,10 @@ class Game_Event < Game_Character
   # * Grabs comment from event
   #--------------------------------------------------------------------------
   def grab_comment(regex,default=nil)
-    return unless @list
+    unless @list
+      return default unless default.nil?
+      return false
+    end
     reg = []
     @list.each do |cmd|
       next if cmd.code != 108 && cmd.code != 408
