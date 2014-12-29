@@ -57,7 +57,7 @@ module Quasi
 #  For testing purposes, set the bottom value to true to see the collision map.
 #  Only shows during play testing.
 #------------------------------------------------------------------------------
-    SHOWMAP    = false
+    SHOWMAP    = true
     MAPBLEND   = 0
     MAPOPACITY = 120
   end
@@ -228,13 +228,13 @@ class Spriteset_Map
   alias :cmap_sm_update   :update
   def update
     cmap_sm_update
-    update_cmap
   end
   #--------------------------------------------------------------------------
   # * Update Collision Map
   #--------------------------------------------------------------------------
   def update_cmap
     return unless @cmap
+    return if @cmap.disposed?
     @cmap.ox = $game_map.display_x * 32
     @cmap.oy = $game_map.display_y * 32
   end
