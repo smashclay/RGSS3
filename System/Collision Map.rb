@@ -1,9 +1,9 @@
 #==============================================================================
 # ** Quasi Collision Map v1.1
 #  Requires Quasi Movement [version 1.2.1 +]
-#    http://code.quasixi.com/page/post/movement/
+#    http://quasixi.com/movement/
 #  Requires Quasi Module [version 0.4.5]
-#    http://code.quasixi.com/page/post/quasi+module/
+#    http://quasixi.com/quasi+module/
 #  If links are down, try my github
 #    https://github.com/quasixi/RGSS3
 #==============================================================================
