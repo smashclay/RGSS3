@@ -3,7 +3,7 @@
 #  Requires Quasi Movement [version 1.2.1 +]
 #    http://quasixi.com/movement/
 #  Requires Quasi Module [version 0.4.5]
-#    http://quasixi.com/quasi+module/
+#    http://quasixi.com/quasi-module/
 #  If links are down, try my github
 #    https://github.com/quasixi/RGSS3
 #==============================================================================
