@@ -185,7 +185,7 @@ module Quasi
 end
 
 $imported = {} if $imported.nil?
-$imported["Quasi"] = 0.45
+$imported["Quasi"] = 0.47
 
 #==============================================================================
 # ** SceneManager
