@@ -79,7 +79,7 @@ end
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
 $imported["Quasi_Movement"] = 0 if $imported["Quasi_Movement"].nil?
-$imported["Quasi_CollisionMap"] = 1
+$imported["Quasi_CollisionMap"] = 1.1
 
 if $imported["Quasi_Movement"] >= 1.23 && $imported["Quasi"] >= 0.45
 
