@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4.7
+# ** Quasi v0.4.8
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -80,6 +80,9 @@ module Quasi
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v0.4.8 - 12/30/14
+#        - Fixed bug with int? method
+# --
 # v0.4.7 - 12/28/14
 #        - Fixed bug in grab_comment method
 # --
@@ -185,7 +188,7 @@ module Quasi
 end
 
 $imported = {} if $imported.nil?
-$imported["Quasi"] = 0.47
+$imported["Quasi"] = 0.48
 
 #==============================================================================
 # ** SceneManager
@@ -633,13 +636,13 @@ class String
   # * Checks if string only contains letters
   #--------------------------------------------------------------------------
   def abc?
-    return self !~ /\d/ 
+    return self !~ /\d/
   end
   #--------------------------------------------------------------------------
   # * Checks if string only contains numbers
   #--------------------------------------------------------------------------
   def int?
-    self.to_i.to_s == self
+    self.strip.to_i.to_s == self.strip
   end
   #--------------------------------------------------------------------------
   # * Checks if string is in Symbol format
