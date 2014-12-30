@@ -1,7 +1,7 @@
 #==============================================================================
-# ** Quasi Movement v1.2.3
+# ** Quasi Movement v1.2.4
 #  Require Module Quasi [version 0.4.4 +]
-#    http://quasixi.com/quasi-module/
+#    http://quasixi.com//quasi-module/
 #  If links are down, try my github
 #    https://github.com/quasixi/RGSS3
 #=============================================================================
@@ -110,7 +110,7 @@ module Quasi
 #  Only shows during play testing.
 #  *Does not show region boxes!*
 #------------------------------------------------------------------------------
-    SHOWBOXES   = false
+    SHOWBOXES   = true
     BOXBLEND    = 0
     BOXCOLOR    = Color.new(255, 0, 0, 120)
 #------------------------------------------------------------------------------
@@ -143,6 +143,8 @@ end
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v1.2.4 - 12/30/14
+#      - Small change in bounding box dispose
 # v1.2.3 - 12/26/14
 #      - Added new method in characterbase for dir8 sprite compatibility
 #        (New method is dir8enable?, by default it is false, when it's true
@@ -231,7 +233,7 @@ end
 #==============================================================================#
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
-$imported["Quasi_Movement"] = 1.23
+$imported["Quasi_Movement"] = 1.24
 
 if $imported["Quasi"] >= 0.43
 #==============================================================================
@@ -1477,11 +1479,16 @@ class Sprite_Character < Sprite_Base
   #--------------------------------------------------------------------------
   alias :qbox_dispose   :dispose
   def dispose
-    if @box_sprite
-      @box_sprite.bitmap.dispose if @box_sprite.bitmap
-      @box_sprite.dispose
-    end
     qbox_dispose
+    dispose_box
+  end
+  #--------------------------------------------------------------------------
+  # * Free box
+  #--------------------------------------------------------------------------
+  def dispose_box
+    return unless @box_sprite
+    @box_sprite.bitmap.dispose if @box_sprite.bitmap
+    @box_sprite.dispose
   end
   #--------------------------------------------------------------------------
   # * Start Box Display
@@ -1523,6 +1530,7 @@ class Sprite_Character < Sprite_Base
     end
     if @character.bounding_box.is_a?(Hash)
       if @bdir != @character.direction
+        dispose_box
         start_box
       end
     end
