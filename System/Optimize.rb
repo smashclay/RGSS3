@@ -1,7 +1,7 @@
 #==============================================================================
-# ** Quasi Optimize v 0.7
+# ** Quasi Optimize v 0.8
 #  Requires Quasi Movement [version 1.1.5+]
-#   http://code.quasixi.com/page/post/movement/
+#   http://quasixi.com/movement/
 #==============================================================================
 #  Optimizes Quasi Movement for higher performance.  Like all other anti-lag
 # event scripts, this only keeps events that are on/near the screen.  If they
@@ -35,7 +35,7 @@ end
 #   ** are doing!                                                      **
 #==============================================================================#
 $imported = {} if $imported.nil?
-$imported["Quasi_Optimize"] = 0.7
+$imported["Quasi_Optimize"] = 0.8
 
 if $imported["Quasi_Movement"]
 #==============================================================================
@@ -134,24 +134,25 @@ class Game_CharacterBase
   #--------------------------------------------------------------------------
   alias :qopt_gcb_tilebox   :tilebox_passable?
   def tilebox_passable?(x, y, d)
-    return false if @lasttile.include?([x, y, d])
-    if qopt_gcb_tilebox(x, y, d)
+    unless qopt_gcb_tilebox(x, y, d)
+      p "failed" if self.is_a?(Game_Player)
       @lasttile << [x, y, d] 
       @lasttile.shift if @lasttile.length > 2
     end
-    return @lasttile.include?([x, y, d])
+    return true unless @lasttile.include?([x, y, d])
+    return false
   end
   #--------------------------------------------------------------------------
   # * Detect Collision with Character 
   #--------------------------------------------------------------------------
   alias :qopt_gcb_box   :collide_with_box?
   def collide_with_box?(x, y)
-    return true if @lastbox.include?([x, y])
-    unless qopt_gcb_box(x, y)
+    if qopt_gcb_box(x, y)
       @lastbox << [x, y] 
       @lastbox.shift if @lastbox.length > 2
     end
-    return !@lastbox.include?([x, y])
+    return true if @lastbox.include?([x, y])
+    return false
   end
 end
 
