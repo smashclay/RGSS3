@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Movement v1.2.4
+# ** Quasi Movement v1.3
 #  Require Module Quasi [version 0.4.4 +]
 #    http://quasixi.com//quasi-module/
 #  If links are down, try my github
@@ -24,7 +24,7 @@
 #  - Follow instructions below
 #
 # Extra instructions + Bounding box setup help at:
-#  http://code.quasixi.com/page/post/movement/
+#  http://quasixi.com/movement/
 #==============================================================================
 module Quasi
   module Movement
@@ -34,7 +34,7 @@ module Quasi
 #  Default is 1, meaning pixel movement.  This can be changed back
 #  to 32 which is vxa default tile movement.
 #------------------------------------------------------------------------------
-    GRID      = 1
+    GRID      = 32
 #------------------------------------------------------------------------------
 # Optimizing settings:
 #  SMARTMOVE
@@ -47,7 +47,7 @@ module Quasi
 #    :dir    tries different similiar directions if move failed (DIR8 needs to be true)
 #    :both   both :speed and :dir
 #------------------------------------------------------------------------------
-    SMARTMOVE = :both
+    SMARTMOVE = false
 #------------------------------------------------------------------------------
 #  MIDPASS
 #      An extra collision check for the midpoint of the movement.  Should be
@@ -56,7 +56,7 @@ module Quasi
 #    (Default passibilty only checks if you collided with anything at the point
 #     you moved to, not anything inbetween)
 #------------------------------------------------------------------------------
-    MIDPASS   = false
+    MIDPASS   = true
 #------------------------------------------------------------------------------
 #    Set DIR8 to true or false.  When true it will allow for 8 direction
 #  movement, when false it will not.
@@ -86,6 +86,15 @@ module Quasi
       :ship     => [22, 22, 5, 9],
       :airship  => [22, 22, 5, 9]
     }
+#------------------------------------------------------------------------------
+# Set EVENTFREQ.  
+#    This changes how many pixels an event should move before stopping.
+#  For default vxa an event moves 32 pixels then stops a short time depending
+#  on his frequency.  So if we have a pixel grid movement (GRID = 1) we can
+#  duplicate that feature by setting this to 32, and the event will move 32 pixels
+#  until he stops, instead of stopping at every pixel.
+#------------------------------------------------------------------------------
+    EVENTFREQ = 32
 #------------------------------------------------------------------------------
 # REGION BOXES  
 #    These give region bounding boxes.
@@ -143,14 +152,22 @@ end
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v1.3 - 12/31/14
+#      - Changed a few methods that used speed
+#      - Added multiplicity option to qmove()
+#      - Added an Event Frequence setting
+# --
 # v1.2.4 - 12/30/14
 #      - Small change in bounding box dispose
+# --
 # v1.2.3 - 12/26/14
 #      - Added new method in characterbase for dir8 sprite compatibility
 #        (New method is dir8enable?, by default it is false, when it's true
 #         it will allow for direction also be 1, 3, 7, or 9)
+# --
 # v1.2.2 - 12/25/12
 #      - Small fix with vehicle, forgot to put it as absolute value
+# --
 # v1.2.1 - 12/23/14
 #      - Fixed some disposing problems with showbox
 #      - Fixed bug where characters can move off map screen with through
@@ -233,7 +250,7 @@ end
 #==============================================================================#
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
-$imported["Quasi_Movement"] = 1.24
+$imported["Quasi_Movement"] = 1.3
 
 if $imported["Quasi"] >= 0.43
 #==============================================================================
@@ -466,8 +483,7 @@ class Game_CharacterBase
     half_tiles = move_tiles/2.0
     x2 = $game_map.round_px_with_direction(x, d, half_tiles)
     y2 = $game_map.round_py_with_direction(y, d, half_tiles)
-    return false unless tilebox_passable?(x2, y2, d) && 
-      tilebox_passable?(x2, y2, reverse_dir(d))
+    return false unless tilebox_passable?(x2, y2, d)
     return false if collide_with_box?(x2, y2)
     return true
   end
@@ -621,7 +637,7 @@ class Game_CharacterBase
   # * How many tiles are you moving
   #--------------------------------------------------------------------------
   def move_tiles
-    @grid < real_move_speed ? real_move_speed : @grid
+    @grid < speed ? speed : @grid
   end
   def speed
     2**real_move_speed / 8.0
@@ -857,7 +873,9 @@ class Game_Character < Game_CharacterBase
       next unless list.parameters[0] =~ /qmove/
       qmove =  list.parameters[0].delete "qmove()"
       qmove = qmove.split(",").map {|s| s.to_i}
-      (qmove[1]/real_move_speed).times do
+      qmove[2] ||= 1
+      amt = (qmove[1] * qmove[2]) / speed
+      amt.floor.times do
         @move_route.list.insert(i+1, RPG::MoveCommand.new(move[qmove[0]]))
       end
     end
@@ -867,7 +885,7 @@ class Game_Character < Game_CharacterBase
   #--------------------------------------------------------------------------
   # * Filler method
   #--------------------------------------------------------------------------
-  def qmove(dir, steps)
+  def qmove(dir, steps, multi=1)
   end
   #--------------------------------------------------------------------------
   # * Move Toward Character
@@ -1023,6 +1041,7 @@ class Game_Event < Game_Character
     @map_id = map_id
     @event = event
     @id = @event.id
+    @freq_count = 0
     refresh
     init_pos(@event.x, @event.y)
   end
@@ -1046,6 +1065,39 @@ class Game_Event < Game_Character
       @offsets = [ox.to_i, oy.to_i]
     end
     return @offsets
+  end
+  #--------------------------------------------------------------------------
+  # * Update While Stopped
+  #--------------------------------------------------------------------------
+  def update_stop
+    @freq_count += 1 unless @locked
+    update_self_movement unless @move_route_forcing
+  end
+  #--------------------------------------------------------------------------
+  # * Update During Autonomous Movement
+  #--------------------------------------------------------------------------
+  def update_self_movement
+    return unless near_the_screen?
+    if @freq_count <= real_freq
+      case @move_type
+      when 1;  move_type_random
+      when 2;  move_type_toward_player
+      when 3;  move_type_custom
+      end
+    else
+      @stop_count += 1
+      if @stop_count > stop_count_threshold
+        @freq_count = @stop_count = 0
+      end
+    end
+  end
+  #--------------------------------------------------------------------------
+  # * Get real frequency
+  #--------------------------------------------------------------------------
+  def real_freq
+    v1 = move_tiles / speed
+    norm = Quasi::Movement::EVENTFREQ / speed
+    return norm / v1
   end
   #--------------------------------------------------------------------------
   # * Detect Collision with Character 
