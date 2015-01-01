@@ -30,6 +30,11 @@ module Quasi
 #      the shop array to get the items stock, or use its :typeid
 #     *Note* infinite items return 0
 #
+#  To find out if a shop is empty (ignores infinite items) use:
+#    shopquantity_empty?(SHOPID)
+#     -Set SHOPID to the shop you are checking if it's empty
+#     -This returns either true or false
+#
 # Example:
 #   open_shopquantity(1)
 #     This will open shop 1
