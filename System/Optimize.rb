@@ -1,30 +1,45 @@
 #==============================================================================
-# ** Quasi Optimize v 0.8
+# ** Quasi Optimize v 1.0
 #  Requires Quasi Movement [version 1.1.5+]
 #   http://quasixi.com/movement/
+#  Requires Quasi Module [version 0.4.5]
+#    http://quasixi.com/quasi-module/
+#  If links are down, try my github
+#    https://github.com/quasixi/RGSS3
 #==============================================================================
 #  Optimizes Quasi Movement for higher performance.  Like all other anti-lag
 # event scripts, this only keeps events that are on/near the screen.  If they
 # are offscreen their sprites are disposed.  By doing this the collision
 # checks only check for events on screen, instead of all the events on the map.
-#
-#  Want to use someone elses anti-lag script?  No problem!
-#  On line 62 you will see def map_events
-#  change the return value in that def to to event list / list method that
-#  the anti lag uses.  Default VXA uses @events.values
 #==============================================================================
 # How to install:
 #  - Place this below Quasi Movement (link is above)
+#  - Place this below any Quasi Movement addons ( like Collision Map )
 #  - Make sure the version of Quasi Movement is the required version.
 #==============================================================================
 module Quasi
   module Optimize
     #--------------------------------------------------------------------------
-    # Set to true if you want events that are offscreen to still be able
-    # to move.  This will actually drop performance, vx ace has this set on
-    # false by default.
+    # Gives the screen some padding to allow some offscreen events to be added
+    # When set to 0, and if you're moving quick you will see the events sprites
+    # being added, but if you instead the value the events sprite will be added
+    # before they are on screen.
     #--------------------------------------------------------------------------
-    EVENTMOVE = false
+    SCREENOFFSET_X = 5
+    SCREENOFFSET_Y = 5
+    #--------------------------------------------------------------------------
+    # Event Comment Tags:
+    #  <offscreen>
+    #    An event with this comment will be able to move even when it's offscreen
+    #   *Note* Collisions only check events that are on screen so offscreen events
+    #    might end up inside another event.
+    #
+    #  <nosprite>
+    #    An event with this comment won't have it's sprite created, which should
+    #   be used on like system events / parallel events that have no sprite.
+    #   *Note* If you don't know if you need this don't use it, it might not
+    #    even provide a noticable performance enhance.
+    #--------------------------------------------------------------------------
   end
 end
 #==============================================================================#
@@ -35,9 +50,11 @@ end
 #   ** are doing!                                                      **
 #==============================================================================#
 $imported = {} if $imported.nil?
-$imported["Quasi_Optimize"] = 0.8
+$imported["Quasi"] = 0 if $imported["Quasi"].nil?
+$imported["Quasi_Movement"] = 0 if $imported["Quasi_Movement"].nil?
+$imported["Quasi_Optimize"] = 1.0
 
-if $imported["Quasi_Movement"]
+if $imported["Quasi_Movement"] >= 1.31 && $imported["Quasi"] >= 0.45
 #==============================================================================
 # ** Game_Map
 #------------------------------------------------------------------------------
@@ -52,6 +69,7 @@ class Game_Map
   alias :qopt_gm_setup    :setup
   def setup(map_id)
     qopt_gm_setup(map_id)
+    @last_gridpos = [0, 0]
     @onscreenevents = []
   end
   #--------------------------------------------------------------------------
@@ -72,29 +90,30 @@ class Game_Map
   # * Setup on screen events
   #--------------------------------------------------------------------------
   def setup_onscreenevents
-    hx = 2
-    hy = 2
-    screenx = (@display_x.truncate-hx)..(@display_x.truncate+screen_tile_x+hx)
-    screeny = (@display_y.truncate-hy)..(@display_y.truncate+screen_tile_y+hy)
+    return unless SceneManager.scene_is?(Scene_Map)
     oldevents = map_events
-    for x in screenx
-      for y in screeny
-        e = @events.values.select{|event| event.pos?(x, y)}
-        unless e.empty?
-          e.each do |e2|
-            next if @onscreenevents.include?(e2)
-            @onscreenevents << e2
-            SceneManager.scene.spriteset_add(e2) if SceneManager.scene_is?(Scene_Map)
-          end
-        end
-      end
-    end
+    @onscreenevents = @events.values.select{|event| event_onscreen?(event)}
+    @onscreenevents.each{|e| SceneManager.scene.spriteset_add(e)}
     remove = oldevents - map_events
     unless remove.empty?
-      if SceneManager.scene_is?(Scene_Map)
-        remove.each{|e| SceneManager.scene.spriteset_remove(e.id)}
-      end
+      remove.each{|e| SceneManager.scene.spriteset_remove(e.id)}
     end
+  end
+  #--------------------------------------------------------------------------
+  # * Check if x, y pos is on screen
+  #--------------------------------------------------------------------------
+  def event_onscreen?(event)
+    return true if event.offscreen?
+    return false if event.spriteless?
+    x = event.x
+    y = event.y
+    hx = Quasi::Optimize::SCREENOFFSET_X
+    hy = Quasi::Optimize::SCREENOFFSET_Y
+    screenx = (@display_x.floor - hx)..(@display_x.floor + screen_tile_x + hx)
+    screeny = (@display_y.floor - hy)..(@display_y.floor + screen_tile_y + hy)
+    passedx = x >= screenx.first && x <= screenx.last
+    passedy = y >= screeny.first && y <= screeny.last
+    return passedx && passedy
   end
   #--------------------------------------------------------------------------
   # * Frame Update
@@ -105,10 +124,22 @@ class Game_Map
     qopt_gm_ups(main)
     update_screenevents
   end
-  
+  #--------------------------------------------------------------------------
+  # * Update screen event whenever screen moved 1 grid
+  #--------------------------------------------------------------------------
   def update_screenevents
-    return unless $game_player.update_lastgridpos?
+    return unless update_lastgridpos?
     setup_onscreenevents
+  end
+  #--------------------------------------------------------------------------
+  # * Checks last grid position
+  #--------------------------------------------------------------------------
+  def update_lastgridpos?
+    if @last_gridpos != [@display_x.floor, @display_y.floor]
+      @last_gridpos = [@display_x.floor, @display_y.floor]
+      return true
+    end
+    return false
   end
 end
 
@@ -135,7 +166,6 @@ class Game_CharacterBase
   alias :qopt_gcb_tilebox   :tilebox_passable?
   def tilebox_passable?(x, y, d)
     unless qopt_gcb_tilebox(x, y, d)
-      p "failed" if self.is_a?(Game_Player)
       @lasttile << [x, y, d] 
       @lasttile.shift if @lasttile.length > 2
     end
@@ -157,35 +187,6 @@ class Game_CharacterBase
 end
 
 #==============================================================================
-# ** Game_Character
-#------------------------------------------------------------------------------
-#  A character class with mainly movement route and other such processing
-# added. It is used as a super class of Game_Player, Game_Follower,
-# GameVehicle, and Game_Event.
-#==============================================================================
-
-class Game_Character < Game_CharacterBase
-  #--------------------------------------------------------------------------
-  # * Initialize Public Member Variables
-  #--------------------------------------------------------------------------
-  alias :qopt_gc_init   :init_private_members
-  def init_private_members
-    qopt_gc_init
-    @last_gridpos = [0, 0]
-  end
-  #--------------------------------------------------------------------------
-  # * Checks last grid position
-  #--------------------------------------------------------------------------
-  def update_lastgridpos?
-    if @last_gridpos != [@x, @y]
-      @last_gridpos = [@x, @y]
-      return true
-    end
-    return false
-  end
-end
-
-#==============================================================================
 # ** Game_Event
 #------------------------------------------------------------------------------
 #  This class handles events. Functions include event page switching via
@@ -201,11 +202,13 @@ class Game_Event < Game_Character
   #--------------------------------------------------------------------------
   alias :qopt_ge_near    :near_the_screen?
   def near_the_screen?(dx = 12, dy = 8)
-    if Quasi::Optimize::EVENTMOVE
-      return true
-    else
-      qopt_ge_near(dx, dy)
-    end
+    return offscreen? ? true : qopt_ge_near(dx, dy)
+  end
+  def offscreen?
+    return grab_comment(/<offscreen>/i)
+  end
+  def spriteless?
+    return grab_comment(/<nosprite>/i)
   end
 end
 
@@ -259,7 +262,7 @@ class Spriteset_Map
   alias :qopt_sm_upc    :update_characters
   def update_characters
     qopt_sm_upc
-    @event_sprites.each_value{|sprite| sprite.update }
+    @event_sprites.each_value{|sprite| sprite.update}
   end
   #--------------------------------------------------------------------------
   # * Free Character Sprite
@@ -273,12 +276,14 @@ class Spriteset_Map
   # * Free Event Sprite
   #--------------------------------------------------------------------------
   def remove_event(id)
-    @event_sprites[id].dispose
+    return unless @event_sprites[id]
+    @event_sprites.delete(id)
   end
   #--------------------------------------------------------------------------
   # * Add Event Sprite
   #--------------------------------------------------------------------------
   def add_event(event)
+    return if @event_sprites[event.id]
     @event_sprites[event.id] = Sprite_Character.new(@viewport1, event)
   end
 end
