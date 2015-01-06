@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi v0.4.8
+# ** Quasi v0.4.9
 #==============================================================================
 #  Adds new methods to VXA's default classes and modules which is found to
 # be useful.
@@ -80,6 +80,9 @@ module Quasi
 #==============================================================================
 # Change Log
 #------------------------------------------------------------------------------
+# v0.4.9 - 1/5/14
+#        - Move def linepoints to Math module
+# --
 # v0.4.8 - 12/30/14
 #        - Fixed bug with int? method
 # --
@@ -91,33 +94,6 @@ module Quasi
 # --
 # v0.4.5 - 12/23/14
 #        - Added Hex color code compatibility
-# --
-# v0.4.4 - 12/19/14
-#        - Fixed String.int? to accept negative values
-# --
-# v0.4.3 - 12/14/14
-#        - Changed regenerate_hp/mp/tp to overwrites to work with
-#          Yanfly popup damage.
-# --
-# v0.4.2 - 12/9/14
-#        - Fixed issue with Quick Test and Battle Testing
-# --
-# v0.4.1 - 12/6/14
-#        - Added 3 new params, hrt, mrt, trt (similar to hgr, mgr, tgr)
-#          - These new params allow for a fixed increase of regen instead of a %
-#        - Added eval to <param change>, which allows for formulas inside it
-# --
-# v0.4 - Fixed an issue with event comments only grabbing first line
-#      - Modified Quasi::Regex method
-#      - Added few extra methods to string
-# --
-# v0.3 - Added a couple of new methods, and removed some from game_party
-# --
-# v0.2 - Changed followers to be made when there are party members instead of
-#        already being made.
-#      - Fix to angle, had a typo.
-# --
-# v0.1 - Pre-Released for movement script
 #==============================================================================#
 # By Quasi (http://quasixi.com/) || (https://github.com/quasixi/RGSS3)
 #  - 11/11/14
@@ -188,7 +164,7 @@ module Quasi
 end
 
 $imported = {} if $imported.nil?
-$imported["Quasi"] = 0.48
+$imported["Quasi"] = 0.49
 
 #==============================================================================
 # ** SceneManager
@@ -606,6 +582,47 @@ module Math
     x = cx + Math.sin(angle)*radius
     y = cy + Math.cos(angle)*radius
     return [x, y]
+  end
+  #--------------------------------------------------------------------------
+  # * Returns the points on a line
+  # line = [x1, y1, x2, y2]
+  #--------------------------------------------------------------------------
+  def self.linepoints(line, precision=1)
+    sx, sy, ex, ey = line
+    points = []
+    x1 = sx < ex ? sx.floor : ex.floor
+    y1 = sy < ey ? sy.floor : ey.floor
+    x2 = x1 == sx ? ex.floor : sx.floor
+    y2 = y1 == sy ? ey.floor : sy.floor
+    
+    distx = (sx - ex)
+    disty = (sy - ey)
+    slope = disty / distx if distx != 0
+    
+    if distx.abs > disty.abs
+      if slope
+        for x in x1..x2
+          next unless x % precision == 0
+          y = slope == 0 ? sy : ((x-sx)*slope).round + sy
+          points << [x, y]
+        end
+      end
+    else
+      if slope
+        for y in y1..y2
+          next unless y % precision == 0
+          x = slope == 0 ? sx : ((y-sy)/slope).round + sx
+          points << [x, y]
+        end
+      else
+        for y in y1..y2
+          next unless y % precision == 0
+          points << [sx, y]
+        end
+      end
+    end
+    points.reverse! if points[0] != [sx, sy]
+    return points
   end
 end
 
