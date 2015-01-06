@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Movement v1.3
+# ** Quasi Movement v1.3.1
 #  Require Module Quasi [version 0.4.4 +]
 #    http://quasixi.com//quasi-module/
 #  If links are down, try my github
@@ -34,7 +34,7 @@ module Quasi
 #  Default is 1, meaning pixel movement.  This can be changed back
 #  to 32 which is vxa default tile movement.
 #------------------------------------------------------------------------------
-    GRID      = 32
+    GRID      = 1
 #------------------------------------------------------------------------------
 # Optimizing settings:
 #  SMARTMOVE
@@ -47,7 +47,7 @@ module Quasi
 #    :dir    tries different similiar directions if move failed (DIR8 needs to be true)
 #    :both   both :speed and :dir
 #------------------------------------------------------------------------------
-    SMARTMOVE = false
+    SMARTMOVE = :both
 #------------------------------------------------------------------------------
 #  MIDPASS
 #      An extra collision check for the midpoint of the movement.  Should be
@@ -56,7 +56,7 @@ module Quasi
 #    (Default passibilty only checks if you collided with anything at the point
 #     you moved to, not anything inbetween)
 #------------------------------------------------------------------------------
-    MIDPASS   = true
+    MIDPASS   = false
 #------------------------------------------------------------------------------
 #    Set DIR8 to true or false.  When true it will allow for 8 direction
 #  movement, when false it will not.
@@ -150,8 +150,11 @@ module Quasi
   end
 end
 #==============================================================================
-# Change Log
+# Change Log (Last 5)
 #------------------------------------------------------------------------------
+# v1.3.1 - 1/5/14
+#      - Fixed a few some bugs that used speed instead of move_tiles
+# --
 # v1.3 - 12/31/14
 #      - Changed a few methods that used speed
 #      - Added multiplicity option to qmove()
@@ -167,74 +170,6 @@ end
 # --
 # v1.2.2 - 12/25/12
 #      - Small fix with vehicle, forgot to put it as absolute value
-# --
-# v1.2.1 - 12/23/14
-#      - Fixed some disposing problems with showbox
-#      - Fixed bug where characters can move off map screen with through
-# --
-# v1.2 - 12/19/14
-#      - Events face right direction when talked too
-#      - Vehicle getting on / off fixed
-#      - Tile (0, 0) impassibile was fixed
-#      - Prepared for diagonal direction sprite script
-#      - Fix for Map Vertical/Horizontal Scroll
-#      - Fix for negative value ox / oy values for boxes
-#      - Counters now work
-#      - Initial x / y offset functions
-#      - MidPass fix for larger grid
-# --
-# v1.16 - 12/6/14
-#      - Changed @events.values to a method called map_events
-#         this should allow easy compatibility patch with other anti lag
-# --
-# v1.15 - 12/6/14
-#      - Added some vehicle support
-#      - Fixed followers to straighten when following
-#      - Fixed random move
-#      - Above/Below priority are fixed
-# --
-# v1.1 - 11/27/14
-#      - Added some missing tileboxes
-#      - Tileboxes now created on map load, instead of when stepping on tile
-#      - Tileboxes are now visible with SHOWBOXES settings
-#      - Some SHOWBOXES settings ( blend type and color )
-#      - 2 New options to help reduce lag
-#        SMARTMOVE
-#         - If move didn't succed it will keep trying at lower speeds, until
-#           speed reaches 0.
-#         * Should be used only with pixel movement (GRID = 1)
-#        MIDPASS
-#         - Checks if the midpoint for the move is passable
-#           Small/Thin boxes can be skipped over depending on the
-#           Characters box and grid movement
-#           (You should avoid giving events/charas small boxes at higher grid)
-#         * Should only be used with grid movement like 32
-#      - Seperate default box option for events
-#      - New bounding box comment for events, allows for different box
-#        based on direction.
-#      - Began to fix followers, distance is fixed.
-#      - Fixed Turn/Move Towards/Away from character + added diagonal movement
-#        if its turned on.
-# --
-# v1.0 - 11/18/14
-#      - Removed friction, will write as a seperate add-on.
-#      - Added a few new bounding box methods
-#        > vertices, edge, v_center
-#      - Fixed qmove for forced movement routes (Set Move Route in events)
-#      - Change random to work a smoother for smaller grid movements
-#      - Added TileBoxes which are added in automatically
-#        > Region boxes still priotize over Tiles!
-# --
-# v0.8 - Changed movement speed back to vxa default
-#      - Changed bbox comment box it is now:
-#        <bbox:width,height,ox,oy> (just added the < >)
-#      - Adjusted map passibility, still needs work
-#        Region boxes work much better then tile passibilty.
-#      - Added a mid move passibilty check for more accurate passibilty
-#      - Added Region boxes (more on step 6)
-#      - Added Region Friction (more on step 7) -REMOVED-
-# --
-# v0.7 - Pre-Released for feedback
 #------------------------------------------------------------------------------
 # To do / Upcoming
 #------------------------------------------------------------------------------
@@ -250,9 +185,9 @@ end
 #==============================================================================#
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
-$imported["Quasi_Movement"] = 1.3
+$imported["Quasi_Movement"] = 1.31
 
-if $imported["Quasi"] >= 0.43
+if $imported["Quasi"] >= 0.44
 #==============================================================================
 # ** Game_Map
 #------------------------------------------------------------------------------
@@ -573,8 +508,8 @@ class Game_CharacterBase
     through = through.nil? ? @through : through
     return unless bounding_box
     return if through
-    pass1 = (objbox[0].first <= box_xy[0].last) && (objbox[0].last >= box_xy[0].first)
-    pass2 = (objbox[1].first <= box_xy[1].last) && (objbox[1].last >= box_xy[1].first)
+    pass1 = (objbox[0].first < box_xy[0].last) && (objbox[0].last > box_xy[0].first)
+    pass2 = (objbox[1].first < box_xy[1].last) && (objbox[1].last > box_xy[1].first)
     return pass1 && pass2
   end
   #--------------------------------------------------------------------------
@@ -600,8 +535,8 @@ class Game_CharacterBase
   #--------------------------------------------------------------------------
   def tilebox?(tilebox, nx, ny)
     box = box_xy(nx, ny)
-    insidex = (box[0].last >= tilebox[0].first) && (box[0].first <= tilebox[0].last)
-    insidey = (box[1].last >= tilebox[1].first) && (box[1].first <= tilebox[1].last)
+    insidex = (box[0].last > tilebox[0].first) && (box[0].first < tilebox[0].last)
+    insidey = (box[1].last > tilebox[1].first) && (box[1].first < tilebox[1].last)
     return insidex && insidey
   end
   #--------------------------------------------------------------------------
@@ -839,7 +774,6 @@ class Game_CharacterBase
     x2 = (edge[1][0] / 32.0).floor
     y1 = (edge[0][1] / 32.0).floor
     y2 = (edge[1][1] / 32.0).floor
-    
     return [[x1,  y1], [x2, y2]]
   end
 end
@@ -874,7 +808,7 @@ class Game_Character < Game_CharacterBase
       qmove =  list.parameters[0].delete "qmove()"
       qmove = qmove.split(",").map {|s| s.to_i}
       qmove[2] ||= 1
-      amt = (qmove[1] * qmove[2]) / speed
+      amt = (qmove[1] * qmove[2]) / move_tiles
       amt.floor.times do
         @move_route.list.insert(i+1, RPG::MoveCommand.new(move[qmove[0]]))
       end
