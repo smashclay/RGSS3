@@ -1,5 +1,5 @@
 #==============================================================================
-# ** Quasi Optimize v 1.0
+# ** Quasi Optimize v 1.1
 #  Requires Quasi Movement [version 1.1.5+]
 #   http://quasixi.com/movement/
 #  Requires Quasi Module [version 0.4.5]
@@ -52,7 +52,7 @@ end
 $imported = {} if $imported.nil?
 $imported["Quasi"] = 0 if $imported["Quasi"].nil?
 $imported["Quasi_Movement"] = 0 if $imported["Quasi_Movement"].nil?
-$imported["Quasi_Optimize"] = 1.0
+$imported["Quasi_Optimize"] = 1.1
 
 if $imported["Quasi_Movement"] >= 1.31 && $imported["Quasi"] >= 0.45
 #==============================================================================
@@ -219,6 +219,15 @@ end
 #==============================================================================
 
 class Scene_Map < Scene_Base
+  #--------------------------------------------------------------------------
+  # * Create Sprite Set
+  #--------------------------------------------------------------------------
+  alias :qopt_sm_create   :create_spriteset
+  def create_spriteset
+    qopt_sm_create
+    $game_map.setup_onscreenevents
+  end
+  
   def spriteset_add(event)
     @spriteset.add_event(event)
   end
